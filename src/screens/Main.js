@@ -56,9 +56,9 @@ export default () => {
   useEffect(() => {
     getUser().then(user => setUser(user));
     getToken().then(token => {setToken(token)})
-    console.log("componentDidUnmount");
+    console.log("component-Did-mount");
     return () => {
-      console.log("componentWillUnmount");
+      console.log("component-Will-Un-mount");
     };
   }, []);
 

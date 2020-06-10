@@ -20,6 +20,7 @@ export const HomeScreen = ({navigation}) => {
         setListNew(res.data);
       })
     return () => {
+      console.log("HOME____________________Component-Will-Un-mount");
     };
   }, []);
 

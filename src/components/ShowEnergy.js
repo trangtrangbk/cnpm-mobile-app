@@ -6,13 +6,26 @@ export default class ShowEnergy extends React.Component{
     constructor(props){
         super(props);
         this.state ={
-            isShowText: false
+            isShowText: false,
+            close: false, 
         };
-        setInterval(()=>{
+        var myVar = setInterval(()=>{
+
             this.setState({
                 isShowText : !this.state.isShowText
             });
+            if(this.state.close === this.state.isShowText) clearInterval(myVar);
+            else {
+                this.setState({
+                    close : this.state.isShowText
+                }); 
+            }
+            console.log("show--------"+ this.state.isShowText+ 'close----------'+ this.state.close)
         } , 500);
+    }
+    componentDidMount = ()=> {
+        
+        console.log(this.props.isShow)
     }
     render(){
         const { isShowText } = this.state;

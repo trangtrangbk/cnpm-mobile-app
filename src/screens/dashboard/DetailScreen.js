@@ -9,17 +9,30 @@ import ShowEnergy from '../../components/ShowEnergy';
 import saveNew from '../../api/saveNew';
 import getNewsInStorage from '../../api/getNewsInStorage';
 
+import icEnergy from '../../assets/icons/ic_phone.png';
+
 export const DetailScreen = ({navigation , route})=>{
   const [save, setSave] = React.useState(false);// data: list
+  const [isShowText, setShowText] = React.useState(true);
 
   React.useEffect(() => {
-    getNewsInStorage()
+
+     getNewsInStorage()
       .then(result => {
         if(result.find(item => item._id === route.params.item._id)) setSave(true);
       })
+
+      let myVar = setInterval(async ()=>{
+        await setShowText(isShowText =>  !isShowText)
+      }, 500);
+
+
     return () => {
+        clearInterval(myVar);
+        console.log("Detail ____________________ Component-Will-Un-mount");
     };
   }, []);
+
 
   const handleSave = () =>{
     saveNew(route.params.item)
@@ -37,6 +50,14 @@ export const DetailScreen = ({navigation , route})=>{
     }
     Linking.openURL(phoneNumber);
   };
+  const _ShowEnergy = () => {
+    return(
+      <View style = {isShowText? styleEnergy.active : styleEnergy.un_active}>
+          <Image source={icEnergy} style={styleEnergy.icon}/>
+      </View>
+  );
+  }
+
   return (
     <View style = {{flex: 1}}>
       <KeyboardAwareScrollView style = {styles.main}>
@@ -53,7 +74,12 @@ export const DetailScreen = ({navigation , route})=>{
             </Text>
             <Block center middle style = {{flexDirection: 'column', marginTop: 10, marginBottom: 10, fontSize: 25 }}>
               <View style = {{flexDirection:'row'}}>
-                <ShowEnergy/>
+
+                <View style = { isShowText? styleEnergy.active : styleEnergy.un_active}>
+                    <Image source={icEnergy} style={styleEnergy.icon}/>
+                </View> 
+                {/* <ShowEnergy/> */}
+
                 <Text style = {{textTransform: 'uppercase', color: '#6E6E6E'}}> Giá: </Text>
                 <Text style = {{ color: '#F83A89'}}> 16 triệu VND/căn</Text>
               </View>
@@ -170,6 +196,18 @@ const styles = StyleSheet.create({
     color: '#C6D1D1'
   },
 });
+const styleEnergy = StyleSheet.create({
+  icon: {
+    width: 30,
+    height: 30,
+  },
+  active: {
+      opacity: 1, 
+  },
+  un_active: {
+      opacity: 0, 
+  },
+}); 
  
 
 
