@@ -2,8 +2,9 @@ import React, { Component } from 'react';
 import { Image,StyleSheet, View, Dimensions , Linking, ViewComponent} from 'react-native';
 import { Ionicons,  FontAwesome ,  MaterialCommunityIcons, EvilIcons} from '@expo/vector-icons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import Moment from 'moment';
 var { width,height } = Dimensions.get('window');
-
+Moment.locale('en');
 import {Button, Text, Block, Divider} from '../../components';
 import ShowEnergy from '../../components/ShowEnergy';
 import saveNew from '../../api/saveNew';
@@ -50,14 +51,6 @@ export const DetailScreen = ({navigation , route})=>{
     }
     Linking.openURL(phoneNumber);
   };
-  const _ShowEnergy = () => {
-    return(
-      <View style = {isShowText? styleEnergy.active : styleEnergy.un_active}>
-          <Image source={icEnergy} style={styleEnergy.icon}/>
-      </View>
-  );
-  }
-
   return (
     <View style = {{flex: 1}}>
       <KeyboardAwareScrollView style = {styles.main}>
@@ -70,7 +63,7 @@ export const DetailScreen = ({navigation , route})=>{
         <View style = {{flexDirection: 'column', backgroundColor: '#F6F7F9', justifyContent: 'center', alignItems: 'center', paddingTop: 10, paddingBottom: 10}}>
           <View style = {{backgroundColor: 'white', borderRadius: 10 , width: width-25}}>
             <Text style={{ marginBottom: 6 , marginLeft : 15, marginTop: 8, fontSize: 24}}>
-              {route.params.item.titile}
+              {route.params.item.title}
             </Text>
             <Block center middle style = {{flexDirection: 'column', marginTop: 10, marginBottom: 10, fontSize: 25 }}>
               <View style = {{flexDirection:'row'}}>
@@ -117,7 +110,7 @@ export const DetailScreen = ({navigation , route})=>{
             </Text>
             <View style = {{flexDirection: 'row', marginLeft: 15, marginBottom: 10}}>
               <EvilIcons name = 'calendar' color = 'black' size = {24}  size = {22} style = {{marginTop: 8, marginLeft: 3}}/>
-              <Text style = {{marginLeft: 12, marginTop: 6}}>10 Ngày trước - 25/4/2020</Text>
+              <Text style = {{marginLeft: 12, marginTop: 6}}>10 Ngày trước - {Moment(route.params.item.createDay).format('DD/MM/YYYY')}</Text>
             </View>
           </View>
 

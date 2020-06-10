@@ -1,6 +1,6 @@
 import React, { Component } from 'react'
 import { Image, StyleSheet, View, Dimensions , TouchableOpacity} from 'react-native';
-import { Feather, Ionicons,AntDesign } from '@expo/vector-icons';
+import Moment from 'moment';
 var { width,height } = Dimensions.get('window');
 import Text from './Text';
 import Route from '../constants/Route';
@@ -12,7 +12,7 @@ import icheart from '../assets/icons/love.png';
 import icheartbr from '../assets/icons/h.png';
 
 var box_height = height/4+20;
-
+Moment.locale('en');
 
 export const Item = ({navigation , item})=>{
   const [isSave, setSave] = React.useState(false);
@@ -41,7 +41,7 @@ export const Item = ({navigation , item})=>{
             </View>
             <View style={ styles.box4 }>
               <Text  h4 style = {styles.title}>
-                {item.titile}
+                {item.title}
               </Text>
               <Text  style={{fontSize: 18, marginTop: 8 ,color: '#9D150A'}}>
                 6 Triệu VND/tháng
@@ -56,7 +56,7 @@ export const Item = ({navigation , item})=>{
             <View style = {styles.box6}>
               <View style = {styles.box7}>
                 <Image source={icClock} style = {styles.icon}/>
-              <Text style = {styles.address}>{item.createDay}</Text>
+              <Text style = {styles.address}>{Moment(item.createDay).format('d MMM')}</Text>
               </View>
 
               {!isSave? 
