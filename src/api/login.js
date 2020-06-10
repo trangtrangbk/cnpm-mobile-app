@@ -1,12 +1,13 @@
 
 import  link from './link';
 const login = async (values) =>(
-    await fetch('http://'+link+':5000/api/auth/login', 
+    await fetch('https://myfroom.herokuapp.com/api/login', 
     {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            Accept: 'application/json'
+            Accept: 'application/json',
+            'Headers': {'Authorization': values.token} 
         },
         body: JSON.stringify(values)
     })

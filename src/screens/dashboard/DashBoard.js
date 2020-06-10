@@ -4,10 +4,13 @@ import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import { StyleSheet , Image } from 'react-native';
 
 import Route from '../../constants/Route';
+import {Button} from '../../components/index'
 import { HomeScreen } from '../dashboard/home/HomeScreen';
 import { DetailScreen} from './DetailScreen';
 import { MapScreen } from './MapScreen';
-import { PostScreen } from '../dashboard/post/PostScreen';
+// import { PostScreen } from '../dashboard/post/PostScreen';
+//import  PostsCreenCopy  from '../dashboard/post/PostsCreenCopy';
+import  PostScreen  from '../dashboard/post/Post';
 import { SaveScreen } from '../dashboard/save/SaveScreen';
 import { SearchScreen } from  '../dashboard/search/SearchScreen';
 
@@ -19,6 +22,7 @@ import heart from '../../assets/icons/heart.png';
 import heart_fc from '../../assets/icons/heart_fc.png';
 import search from '../../assets/icons/search.png';
 import search_fc from '../../assets/icons/search_fc.png';
+import icLeft from '../../assets/icons/ic_left.png';
 
 
 const Stack = createStackNavigator();
@@ -59,7 +63,6 @@ const HomeStackScreen = ({navigation}) => (
         title: null,
         }}
       />
-
     </Stack.Navigator>
   );
   const SearchStackScreen = ({navigation}) => (

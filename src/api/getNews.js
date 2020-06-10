@@ -1,6 +1,6 @@
 import  link from './link';
 const getNews = async (page) =>(
-    await fetch('http://'+link+':5000/api/product/'+page, 
+    await fetch('https://myfroom.herokuapp.com/api/news?page='+page, 
     {
         method: 'GET',
         headers: {

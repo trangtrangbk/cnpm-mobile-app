@@ -17,7 +17,7 @@ export const HomeScreen = ({navigation}) => {
   useEffect(() => {
     getNews(page)
       .then(res => {
-        setListNew(res);
+        setListNew(res.data);
       })
     return () => {
     };
@@ -28,7 +28,7 @@ export const HomeScreen = ({navigation}) => {
     getNews(page+1)
       .then(res =>{
         setPage(page+1),
-        setListNew([...listNew,...res])
+        setListNew([...listNew,...res.data])
       })
   }
 
