@@ -14,7 +14,9 @@ import {Button, Block,Text ,Input } from '../../../components/index'
 import icMenu from '../../../assets/icons/bars.png';
 import Route from '../../../constants/Route';
 import getToken from '../../../api/getToken';
-import getDistrictByCity from '../../../api/apiPlaces/getDistrictByCity';
+import geCities from '../../../api/apiPlaces/getCities'
+import getDistrict from '../../../api/apiPlaces/getDistrict';
+import getWard from '../../../api/apiPlaces/getWards'
 import { block } from 'react-native-reanimated';
 var { width, height } = Dimensions.get('window');
 
@@ -22,23 +24,50 @@ export default class PostScreen extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            isLogin: false,
-            // city: '',
-            // district:'',
-            // ward:'',
-            // cities: [],
-            // districts: [],
-            // wards: [],
+            isLogin: true,
+            city: '',
+            district:'',
+            ward:'',
+            cities: [],
+            districts: [],
+            wards: [],
             localPhotos: [],
             electedPhotoIndex: 0,
         };
     }
     componentDidMount = () =>{
-        getToken()
+         geCities()
+            .then(res => res.map(item=> {
+                let value = {label: item.title, value: item.code}
+                this.setState({cities: [...this.state.cities, value]})
+            }))
+         getToken()
             .then(token => {
                 if(token !== '') this.setState({isLogin: true})
                 else this.setState({isLogin: true})
             })
+
+    }
+
+    onSelectCity = (value) =>{
+        this.setState({districts: [] ,wards: [], city: value});
+        getDistrict(value)
+            .then(res => res.map(item=> {
+                let value = {label: item.title, value: item.code}
+                this.setState({districts: [...this.state.districts,value]})
+            }))
+    }
+    onSelectDistrict = (value) =>{
+        this.setState({wards: [], district: value});
+        getWard(this.state.city, value)
+            .then(res => res.map(item=> {
+                let value = {label: item.title, value: item.code}
+                this.setState({wards: [...this.state.wards,value]})
+            }))
+    }
+
+    onSelectWard = (value) =>{
+        this.setState({ward: value})
     }
     onPressAddPhotoBtn = () => {
         this.ActionSheetSelectPhoto.show();
@@ -117,7 +146,7 @@ export default class PostScreen extends React.Component {
 
     render() {
     const { navigation } = this.props;
-    const {isLogin } = this.state;
+    const {isLogin, cities, districts, wards} = this.state;
     return (
         
         isLogin ? <Fragment>
@@ -141,7 +170,7 @@ export default class PostScreen extends React.Component {
                     style={styles.scrollView}>
 
                     <Formik
-                    initialValues = {{title:'' ,price: '' , area: '' , city: '', district:'', street: '', apartment_number:''}}
+                    initialValues = {{title:'' ,price: '' , area: '', apartment_number:''}}
                     onSubmit = {(values) => {
 
                     alert(JSON.stringify(values)+ wards)
@@ -235,20 +264,12 @@ export default class PostScreen extends React.Component {
                                         <RNPickerSelect
                                         placeholder={{
                                         label: 'Chọn Thành Phố ...',
-                                        // value: 'hockey',
                                         }}
                                         label='city'
                                         formikProps = {formikProps}
-                                        onValueChange={(value) => {
-                                        
-                                            formikProps.values.city = value;
-                                        }}
+                                        onValueChange={ (value )=> this.onSelectCity(value)}
                                         style= {pickerSelectStyles}
-                                        items={[
-                                        { label: 'Đà Nẵng', value: '1',  },
-                                        { label: 'Hà Nội', value: '2' },
-                                        { label: 'Hồ Chí Minh', value: '3' }
-                                        ]}
+                                        items={cities}
                                         hideIcon={Platform.OS === "ios" ? false : true}
                                         // disabled={!canSubmit}
                                     />
@@ -261,9 +282,8 @@ export default class PostScreen extends React.Component {
                                             label: 'Chọn Quận/Huyện ...',
                                         }}
                                         style= {pickerSelectStyles}
-                                        onValueChange={(value) => console.log(value)}
-                                        items={[
-                                        ]}
+                                        onValueChange={(value) => this.onSelectDistrict(value)}
+                                        items={districts}
                                         hideIcon={Platform.OS === "ios" ? false : true}
                                         // disabled={!canSubmit}
                                     />
@@ -280,11 +300,7 @@ export default class PostScreen extends React.Component {
                                         
                                         }}
                                         style= {pickerSelectStyles}
-                                        items={[
-                                            { label: 'Đà Nẵng',value: '1',  },
-                                            { label: 'Hà Nội', value: '2' },
-                                            { label: 'Hồ Chí Minh', value: '3' },
-                                        ]}
+                                        items={wards}
                                         hideIcon={Platform.OS === "ios" ? false : true}
                                         // disabled={!canSubmit}
                                         />

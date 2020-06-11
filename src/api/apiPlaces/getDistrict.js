@@ -1,5 +1,5 @@
-const getDistrictByCity = async (id) =>(
-    await fetch( `https://thongtindoanhnghiep.co/api/city/${id}/district`,
+const getDistricts = async (id) =>(
+    await fetch( `https://hostcuatui.herokuapp.com/api/city/${id}`,
     {
         method: 'GET',
         headers: {
@@ -13,4 +13,4 @@ const getDistrictByCity = async (id) =>(
         console.log("Api call error");
      })
 );
-module.exports = getDistrictByCity;
+module.exports = getDistricts;
