@@ -1,17 +1,16 @@
-import  link from './link';
 const getNews = async (page) =>(
-    await fetch('https://myfroom.herokuapp.com/api/news?page='+page, 
+    await fetch(`https://myfroom.herokuapp.com/api/news?page=${page}&pageSize=4`,
     {
         method: 'GET',
         headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json'
         },
-        body: undefined
+        body: null,
     })
     .then(res => res.json())
     .catch((error)=>{
-        console.log("Api call error"+error);
+        console.log("Api call error get new");
      })
 );
 module.exports = getNews;

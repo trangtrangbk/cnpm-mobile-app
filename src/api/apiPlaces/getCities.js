@@ -10,7 +10,7 @@ const getCities = async () =>(
     })
     .then(res => res.json())
     .catch((error)=>{
-        console.log("Api call error");
+        console.log("Api call error City");
      })
 );
 module.exports = getCities;

@@ -35,7 +35,7 @@ export const Item = ({navigation , item})=>{
               <Image
                 style = {styles.img}
                 source={{
-                  uri: item.picture,
+                  uri: item.picture[0],
                 }}
               /> 
             </View>
@@ -56,7 +56,7 @@ export const Item = ({navigation , item})=>{
             <View style = {styles.box6}>
               <View style = {styles.box7}>
                 <Image source={icClock} style = {styles.icon}/>
-              <Text style = {styles.address}>{Moment(item.createDay).format('d MMM')}</Text>
+              <Text style = {styles.address}>{Moment(item.createDay).format('Do MM YY')}</Text>
               </View>
 
               {!isSave? 

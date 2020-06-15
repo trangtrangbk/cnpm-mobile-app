@@ -7,7 +7,8 @@ import * as yup from 'yup'
 import { Button, Block, Text, Input } from '../../../../components';
 import Route from '../../../../constants/Route';
 import login from '../../../../api/login'
-import saveToken from '../../../../api/saveToken'
+import saveToken from '../../../../api/saveToken';
+import saveID from '../../../../api/saveID';
 import { AuthContext } from '../../../../contexts/AuthContext' 
 
 const { height } = Dimensions.get('window');
@@ -22,7 +23,9 @@ const Login = async (values, navigation, signIn) =>{
   login(values)
     .then(res => {
       if(res.token)  {
+        console.log(res.token, ' Login')
         saveToken(res.token);
+        saveID(res.id);
         signIn();
         navigation.navigate(Route.DASHBOARD) 
       }
@@ -45,8 +48,7 @@ export const LoginScreen = ({ navigation }) => {
         onSubmit = {(values) => {
           Login( values ,navigation, signIn)
         }}
-        validationSchema = {validationSchema}
-        >
+        validationSchema = {validationSchema}>
           {formikProps => (
             <Block center middle style ={{marginTop: 100}}>
               <Block flex={2.5} center>

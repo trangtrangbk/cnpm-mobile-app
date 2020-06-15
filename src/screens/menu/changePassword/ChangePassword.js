@@ -25,14 +25,19 @@ const changePass = async (values , navigation) =>{
     .then(token => {
       changePassword( token, values.currentPassword, values.password)
         .then(res => {
-          if(res.msg === 'Success') onSuccess(navigation)
-          else onFail();
+          console.log(res.message)
+          if(res.message === 'Password was changed') {
+            console.log(res.message)
+            onSuccess(navigation)
+          }
+          else onFail()
         });
       
     })
 }
 
 const onSuccess = (navigation) =>{
+  console.log("Done")
   Alert.alert(
     'Notice',
     'Change password on Successfully',
@@ -42,13 +47,15 @@ const onSuccess = (navigation) =>{
     {cancelable: false}
   )
 }
-const onFail = () => {
+const onFail = (navigation) => {
+  console.log("Error")
   Alert.alert(
     'Notice',
-    'Email has been used by other'
+    'Please check your password',
     [
-      { text:'OK'}
+      { text:'OK' }
     ],
+    {cancelable: false}
   )
 }
 
@@ -62,8 +69,7 @@ export const ChangePassword = ({ navigation }) =>{
         onSubmit = {(values) => {
           changePass(values, navigation)
         }}
-        validationSchema = {validationSchema}
-        >
+        validationSchema = {validationSchema}>
         {formikProps => (
           <Block center>
             <Text h3 style={{ marginBottom: 6, marginTop :25 }}>

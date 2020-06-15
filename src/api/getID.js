@@ -1,8 +1,7 @@
 import { AsyncStorage } from 'react-native';
-const getToken = async () => {
+const getID = async () => {
     try {
-
-        const value = await AsyncStorage.getItem('@token');
+        const value = await AsyncStorage.getItem('@ID');
         if(value !== null) {
             return value;;
         }
@@ -11,5 +10,4 @@ const getToken = async () => {
         return '';
     }
 };
-
-export default getToken;
+export default getID;

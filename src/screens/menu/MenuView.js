@@ -34,10 +34,10 @@ export const DrawerMenuHasToken = (props) => {
             style={styles.avatar}
           />
           <Text white title>
-            { props.user.name}
+            {/* { props.user.username} */}
           </Text>
           <Text white size={9}>
-            { props.user.email}
+            {/* { props.user.email} */}
           </Text>
         </Block>
         <Block>

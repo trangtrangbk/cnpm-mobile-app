@@ -10,7 +10,7 @@ const getWards = async (city,district) =>(
     })
     .then(res => res.json())
     .catch((error)=>{
-        console.log("Api call error");
+        console.log("Api call error Ward");
      })
 );
 module.exports = getWards;

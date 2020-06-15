@@ -29,11 +29,14 @@ export default () => {
       signIn: async () => {
         console.log('signIn MAIN')
         getToken()
-          .then( token => {
-            setToken(token);
-            checkLogin(token).then(res => {
-              setUser(res.user)
-              saveUser(res.user)
+          .then( item => {
+            console.log(item, '----------------- signIn MAIN')
+            setToken(item);
+            checkLogin(item).then(res => {
+              console.log(JSON.stringify(res),'get --- get')
+              setUser(res.resultUser)
+              console.log(JSON.stringify(res.resultUser )+'-------------- res.resultUser' )
+              saveUser(res.resultUser)
             })
           })
       },
@@ -54,9 +57,12 @@ export default () => {
 
 
   useEffect(() => {
-    getUser().then(user => setUser(user));
+    getUser().then(user => {
+      console.log(user, '------------useEffect')
+      setUser(user)
+    });
     getToken().then(token => {setToken(token)})
-    console.log("component-Did-mount");
+    console.log("Main component-Did-mount");
     return () => {
       console.log("component-Will-Un-mount");
     };

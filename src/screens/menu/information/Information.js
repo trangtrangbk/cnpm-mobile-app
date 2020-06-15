@@ -26,6 +26,7 @@ const validationSchema = yup.object().shape({
 const ChangeInfo = async (values , navigation, chanInfo) =>{
   getToken()
     .then(token =>{
+      console.log(token)
       changeInfo(token, values.name,  values.address, values.phone)
       .then(res => {
         if(res.msg === 'Success') {
@@ -78,7 +79,7 @@ export const Information = ({route, navigation}) => {
             scale: 0.5,
           }}
           style = {styles.avatar}/>
-          <Text style={styles.txtName}>{route.params.user.name}</Text>
+          <Text style={styles.txtName}>{route.params.user.username}</Text>
         <Text style={styles.txtEmail}>{route.params.user.email}</Text>
         </View>
         <View style={ styles.content}> 
@@ -86,11 +87,7 @@ export const Information = ({route, navigation}) => {
 
         <Formik
         initialValues = {route.params.user}
-        onSubmit = {(values) => {
-          ChangeInfo(values, navigation, chanInfo)
-        }}
-        validationSchema = {validationSchema}
-        >
+        validationSchema = {validationSchema}>
 
         {formikProps => (
           <Block>
@@ -99,13 +96,13 @@ export const Information = ({route, navigation}) => {
             <TextInput 
             style={styles.input}
             formikProps = {formikProps}
-            label='name'
-            value={formikProps.values.name}
-            onChangeText = {formikProps.handleChange('name')}
-            onBlur = {formikProps.handleBlur('name')}
+            label='username'
+            value={formikProps.values.username}
+            onChangeText = {formikProps.handleChange('username')}
+            onBlur = {formikProps.handleBlur('username')}
             />
             <Text style = {styles.txtError}>
-              {formikProps.touched['name'] && formikProps.errors['name']} 
+              {formikProps.touched['username'] && formikProps.errors['username']} 
             </Text>
             <Text style={styles.labelPhone} >Phone: </Text>
 
@@ -140,10 +137,9 @@ export const Information = ({route, navigation}) => {
             />
 
             <Button 
-            style={styles.buttonSave}
-            onPress={ formikProps.handleSubmit} 
-             >
-              <Text button style={styles.txtSave}> Save</Text>
+              style={styles.buttonSave}
+              onPress={ ()=> ChangeInfo(formikProps.values, navigation, chanInfo)}>
+              <Text button style={styles.txtSave}> Lưu thông tin</Text>
             </Button>
           </Block>
         )}

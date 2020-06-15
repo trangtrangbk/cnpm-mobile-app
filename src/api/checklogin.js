@@ -1,18 +1,16 @@
 
-import link from './link'
-const checkLogin =  (token) =>(
-    fetch('http://'+link+':5000/api/auth/checkLogin', 
+const checkLogin = async (token) =>(
+    await fetch('https://myfroom.herokuapp.com/api/auth', 
     {
-        method: 'POST',
+        method: 'GET',
         headers: {
-            'Content-Type': 'application/json',
-            Accept: 'application/json'
+            "Authorization": token ,
         },
-        body: JSON.stringify({token})
+        body: null,
     })
     .then( res => res.json())
     .catch((error)=>{
-        console.log("Api call error");
+        console.log("Api call error  c"+ error);
      })
 );
 module.exports = checkLogin;

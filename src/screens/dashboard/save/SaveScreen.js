@@ -1,39 +1,31 @@
 import React, {useEffect } from 'react';
-import { View, StyleSheet, Text, TouchableOpacity, Image, Dimensions, FlatList } from 'react-native';
+import { View, StyleSheet, Text, Dimensions, FlatList } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
-import icMenu from '../../../assets/icons/bars.png';
 import { Item } from '../../../components/Item';
 import getNewsInStorage from '../../../api/getNewsInStorage';
 
 var { width, height } = Dimensions.get('window');
 
 export const SaveScreen = ({navigation}) => {
-
-  const [data, setData] = React.useState([]);// data: list
+  const [data, setData] = React.useState([])
   useEffect(() => {
     getNewsInStorage()
       .then(result => setData(result))
     return () => {
     };
   }, []);
-
-
+  const _showMessages = () =>{
+    console.log(data.length)
+    if(data.length===0) return (
+      <View style ={{marginTop: height/2-25, alignSelf: 'center'}}>
+        <Text style={{fontSize: 17}}>Chưa có bài viết nào được lưu</Text>
+      </View>
+    )
+  }
   return (
     <View style = {styles.container}>
-      
-      <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity
-          onPress={() => navigation.openDrawer()}>
-          <View  style={{marginLeft: 10}} >
-            <Image 
-              source= {icMenu}
-              style={{width: 25, height: 25, marginTop: 15}}/>
-          </View>
-        </TouchableOpacity>
-        <Text style={styles.title}>Yêu thích</Text>
-      </View>
-      <View style={styles.divider}/>
+      {_showMessages()}
       <KeyboardAwareScrollView>
         <FlatList
             data={data}

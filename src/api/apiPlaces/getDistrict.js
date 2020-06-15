@@ -10,7 +10,7 @@ const getDistricts = async (id) =>(
     })
     .then(res => res.json())
     .catch((error)=>{
-        console.log("Api call error");
+        console.log("Api call error District");
      })
 );
 module.exports = getDistricts;

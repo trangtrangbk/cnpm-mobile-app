@@ -1,7 +1,7 @@
 import React, { Fragment }from 'react';
-import { View ,StyleSheet, TouchableOpacity,SafeAreaView,
-   Image, Dimensions, TextInput, Platform , ScrollView, StatusBar } from 'react-native';
+import { View ,StyleSheet, TouchableOpacity, SafeAreaView, Image, Dimensions, TextInput, Platform , ScrollView, StatusBar, Alert} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import Spinner from 'react-native-loading-spinner-overlay';
 import RNPickerSelect from 'react-native-picker-select';
 import ImagePicker from 'react-native-image-crop-picker'; //
 import ActionSheet from 'react-native-actionsheet';//
@@ -10,14 +10,16 @@ import Textarea from 'react-native-textarea';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 
-import {Button, Block,Text ,Input } from '../../../components/index'
+import {Button,Text } from '../../../components/index'
 import icMenu from '../../../assets/icons/bars.png';
 import Route from '../../../constants/Route';
 import getToken from '../../../api/getToken';
 import geCities from '../../../api/apiPlaces/getCities'
 import getDistrict from '../../../api/apiPlaces/getDistrict';
-import getWard from '../../../api/apiPlaces/getWards'
-import { block } from 'react-native-reanimated';
+import getWard from '../../../api/apiPlaces/getWards';
+import getAddress from '../../../api/apiPlaces/getAddress';
+import postPicture from '../../../api/postPicture'; 
+import postNew from '../../../api/postNew';
 var { width, height } = Dimensions.get('window');
 
 export default class PostScreen extends React.Component {
@@ -25,30 +27,89 @@ export default class PostScreen extends React.Component {
         super(props);
         this.state = {
             isLogin: true,
+            token: '',
             city: '',
             district:'',
             ward:'',
             cities: [],
             districts: [],
             wards: [],
+            photos: [],
             localPhotos: [],
             electedPhotoIndex: 0,
+            address:'',
+            uploading : false,
+            isPost: true,
+            loading: false,
         };
     }
     componentDidMount = () =>{
+        console.log('----------------------------- did mount post')
+        getToken()
+        .then(tk => {
+            if(tk !== '') {
+                this.setState({isLogin: true, token: tk})
+            }
+            else {
+               
+                this.setState({isLogin: false})
+            }
+        })
          geCities()
             .then(res => res.map(item=> {
                 let value = {label: item.title, value: item.code}
                 this.setState({cities: [...this.state.cities, value]})
             }))
-         getToken()
-            .then(token => {
-                if(token !== '') this.setState({isLogin: true})
-                else this.setState({isLogin: true})
-            })
-
+    }
+    _handelPost = (values, navigation) =>{
+        const {isPost, localPhotos, ward} = this.state;
+        if(localPhotos.length === 0) alert('Vui lòng chọn ảnh.')
+        else if( ward ==='' && !ward) alert('Địa chỉ chưa đầy đủ')
+        else  if(isPost){
+            this.setState({isPost: false, loading: true})
+            this._onDoUploadPress()
+            console.log(values.price +' truoc todo')
+            this._toDo(navigation, { status: false,
+                title: values.title, 
+                description: values.description,
+                area: Number(values.area),
+                price: Number(this._handlePrice(values.price)),
+                address: `${values.apartment_number} ${values.street}${this.state.address}`, 
+                phone:values.phone})
+        }
     }
 
+    _handlePrice = (str) =>{
+        let arr = str.split(',')
+        str ='',
+        arr.forEach(item => str +=item)
+        console.log(str +'handle price')
+        return str
+    }
+     _onMessages = ( navigation) =>{
+        Alert.alert(
+            "Thông báo",
+            "Đăng bài viết thành công vui lòng chờ phê duyệt.",
+            [
+              { text: "OK", onPress: () => navigation.navigate(Route.HOME) }
+            ],
+            { cancelable: false }
+        );
+      }
+      _toDo = (navigation, values) =>{
+        const { token } = this.state;
+        let myVar = setInterval(async ()=>{
+            if(!this.state.uploading) {
+                postNew(token,{...values, picture: this.state.photos})
+                .then(res => {
+                    this.setState({loading: true})
+                    this._onMessages(navigation)
+                })
+                clearInterval(myVar);
+            }
+        }, 1000);
+        
+    }
     onSelectCity = (value) =>{
         this.setState({districts: [] ,wards: [], city: value});
         getDistrict(value)
@@ -59,15 +120,17 @@ export default class PostScreen extends React.Component {
     }
     onSelectDistrict = (value) =>{
         this.setState({wards: [], district: value});
-        getWard(this.state.city, value)
+
+        if(value) getWard(this.state.city, value)
             .then(res => res.map(item=> {
                 let value = {label: item.title, value: item.code}
                 this.setState({wards: [...this.state.wards,value]})
             }))
     }
 
-    onSelectWard = (value) =>{
-        this.setState({ward: value})
+    onSelectWard = async (value) =>{
+         await this.setState({ward: value})
+        this._handelAddress()
     }
     onPressAddPhotoBtn = () => {
         this.ActionSheetSelectPhoto.show();
@@ -78,6 +141,43 @@ export default class PostScreen extends React.Component {
         });
         this.ActionSheet.show();
     };
+
+    _onDoUploadPress = () => {
+        const { localPhotos } = this.state;
+        this.setState({uploading: true})
+        if (localPhotos && localPhotos.length > 0) {
+          let formData = new FormData();
+          localPhotos.forEach((image) => {
+            const file = {
+              uri: image.path,
+              name: image.filename || Math.floor(Math.random() * Math.floor(999999999)) + '.jpg',
+              type: image.mime || 'image/jpeg'
+            };
+            formData.append('photo', file);
+          });
+          postPicture(formData)
+            .then(res => {
+                if(res.message === 'success!') {
+                    this.setState({photos: res.picture})
+                    this.setState({uploading: false})
+                    console.log(res.picture)
+                }
+                else console.log('Error ....')
+            })
+          
+        } else {
+          alert('No photo selected');
+        }
+      }
+    _handelAddress = () =>{
+        const { city, district, ward} = this.state;
+        if(city && (district || district === 0) && (ward || ward ===0))
+        getAddress(city, district, ward)
+            .then(res => {
+                console.log(res.str)
+                this.setState({address: res.str})
+            })
+    }
 
     onActionDeleteDone = index => {
         if (index === 0) {
@@ -131,7 +231,6 @@ export default class PostScreen extends React.Component {
     renderSelectPhotoControl = localPhotos => {
         return (
             <View style={styles.sectionContainer}>
-                <Text style={styles.sectionTitle}>Phần hình ảnh:</Text>
                 <ScrollView style={styles.photoList} horizontal={true}>
                 {this.renderListPhotos(localPhotos)}
                 <TouchableOpacity onPress={this.onPressAddPhotoBtn.bind(this)}>
@@ -143,104 +242,131 @@ export default class PostScreen extends React.Component {
             </View>
         );
     };
-
+    _showLoading = () =>{
+        if(this.state.loading) 
+          return <Spinner visible={this.state.loading} textContent={"Waiting..."} textStyle={{color: '#FFF'}}/>
+      }
+    phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+    validationSchema = yup.object().shape({
+        title: yup.string().label('title')
+            .required('Vui lòng nhập tiêu đề!'),
+        area: yup.number('Vui lòng nhập đúng!')
+            .label('area')    
+            .required('Vui lòng nhập diện tích!')
+            .min(10,'Vui lòng nhập lại đúng diện tích!')
+            .max(1000,'Vui lòng nhập lại đúng diện tích!'),
+        price: yup.string('Vui lòng nhập đúng!')
+            .label('price')
+            .required('Vui lòng nhập chi phí!')
+            .min(0, 'Vui lòng nhập đúng!'),
+        phone: yup.string()
+            .label('phone')
+            .required('Vui lòng nhập số điện thoại!')
+            .matches(this.phoneRegExp, 'Vui lòng nhập đúng!'),
+        street: yup.string()
+            .label('street')
+            .required('Vui lòng nhập tên đường!'),
+        apartment_number: yup.string()
+            .label('apartment_number')
+            .required('Vui lòng nhập số nhà'),
+      })
     render() {
     const { navigation } = this.props;
     const {isLogin, cities, districts, wards} = this.state;
+
     return (
-        
         isLogin ? <Fragment>
             <StatusBar barStyle="dark-content" />
-            <View style={{flexDirection: 'row'}}>
-                <TouchableOpacity
-                onPress={() => navigation.openDrawer()}>
-                <View  style={{marginLeft: 10}} >
-                    <Image 
-                    source= {icMenu}
-                    style={{width: 25, height: 25, marginTop: 15}}/>
-                </View>
-                </TouchableOpacity>
-                <Text style={styles.title}>Đăng Phòng</Text>
-            </View>
-
-            <View style={styles.divider}/>
-            <SafeAreaView>
+            {this._showLoading() }
+            <SafeAreaView style ={{marginTop: 20}}>
                 <KeyboardAwareScrollView
                     contentInsetAdjustmentBehavior="automatic"
                     style={styles.scrollView}>
-
                     <Formik
-                    initialValues = {{title:'' ,price: '' , area: '', apartment_number:''}}
+                    initialValues = {{ 
+                        title:'' ,
+                        price:'',
+                        area: '',
+                        phone: '',
+                        description: '',
+                        street: '',
+                        apartment_number:''}
+                    }
                     onSubmit = {(values) => {
-
-                    alert(JSON.stringify(values)+ wards)
+                        this._handelPost(values, navigation)
                     }}
-                    //validationSchema = {validationSchema}
-                    >
+                    validationSchema = {this.validationSchema} >
                         {formikProps => (
-                            <View style={{backgroundColor: 'white'}}>
-                                <View style={{backgroundColor: 'white', marginTop: 10}}>
-                                    <Text style={{fontSize: 25, marginLeft: 20}}>Phần thông tin:</Text>
+                            <View style={{backgroundColor: '#F2F2F2'}}>
+                                <Text style={styles.header}>Phần thông tin:</Text>
+                                <View style={viewStyles.item}>
                                     <View style = {[styles.item, { width: width-40}]}>
-                                    <Text style={styles.label}>Nhập tiêu đề:</Text>
-                                    <TextInput
-                                        style={{marginLeft: 10}}
-                                        formikProps = {formikProps}
-                                        label='title'
-                                        placeholder={'Ví dụ: Cho thuê phòng có điều hòa'}
-                                        value={formikProps.values.title}
-                                        onChangeText = {formikProps.handleChange('title')}
-                                        onBlur = {formikProps.handleBlur('title')}
-                                    />
-                                    <View style={{height: 1,backgroundColor: '#DADBDC', marginBottom: 10,width: width-40,marginTop: -10,}}/>
-                                    </View>
-
-                                    <View style = {[{width: width-40}, {flexDirection: 'row'}]}>
-                                    <View style={styles.item}>
-                                        <Text style={styles.label}>Diện tích:</Text>
+                                        <Text style={styles.label}>Nhập tiêu đề:</Text>
                                         <TextInput
-                                        keyboardType='numeric'
-                                        style={{marginLeft: 10}}
-                                        formikProps = {formikProps}
-                                        label='price'
-                                        placeholder={'Ví dụ: 100'}
-                                        value={formikProps.values.area}
-                                        onChangeText = {formikProps.handleChange('area')}
-                                        onBlur = {formikProps.handleBlur('area')}
-                                        />
-                                        <View style={{height: 1,backgroundColor: '#DADBDC', marginBottom: 10,width: 2*width/3+20,marginTop: -10,}}/>
+                                            style={{marginLeft: 10}}
+                                            formikProps = {formikProps}
+                                            label='title'
+                                            placeholder={'Ví dụ: Cho thuê phòng có điều hòa'}
+                                            value={formikProps.values.title}
+                                            onChangeText = {formikProps.handleChange('title')}
+                                            onBlur = {formikProps.handleBlur('title')}/>
+                                        <Text style = {styles.txtError}>
+                                            {formikProps.touched['title'] && formikProps.errors['title']} 
+                                        </Text>
+                                        <View style={viewStyles.divider}/>
                                     </View>
-                                    <View style={{ width: 3*width/16, marginTop: 10, height: height/10}}>
-                                        <Text style={{marginTop:height/25, fontSize: 20}}>m2</Text>
-                                    </View>
-                                    
-                                    </View>
-                                    <View style = {[{width: width-40}, {flexDirection: 'row'}]}>
-                                    <View style={styles.item}>
-                                        <Text style={styles.label}>Chi phí:</Text>
-                                        <NumberFormat
-                                        value={formikProps.values.price}
-                                        displayType={'text'}
-                                        thousandSeparator={true}
-                                        renderText={value => (
-                                        <TextInput
+                                
+                                    <View style = {viewStyles.p_a}>
+                                        <View style={styles.item}>
+                                            <Text style={styles.label}>Diện tích:</Text>
+                                            <TextInput
                                             keyboardType='numeric'
                                             style={{marginLeft: 10}}
-                                            placeholder={'Ví dụ: 1,500,000'}
                                             formikProps = {formikProps}
-                                            label='price'
-                                            onChangeText = {formikProps.handleChange('price')}
-                                            onBlur = {formikProps.handleBlur('price')}
-                                            value= {value}
-                                        />)}
-                                        />
-                                        <View style={{height: 1,backgroundColor: '#DADBDC', marginBottom: 10,width: 2*width/3+10,marginTop: -10,}}/>
+                                            label='area'
+                                            placeholder={'Ví dụ: 100'}
+                                            value={formikProps.values.area}
+                                            onChangeText = {formikProps.handleChange('area')}
+                                            onBlur = {formikProps.handleBlur('area')}/>
+                                        <Text style = {styles.txtError}>
+                                            {formikProps.touched['area'] && formikProps.errors['area']} 
+                                        </Text>
+                                            <View style={viewStyles.divider}/>
+                                        </View>
+                                        <View style={{ width: 3*width/16, marginTop: 10, height: height/10}}>
+                                            <Text style={{marginTop:height/25, fontSize: 20}}>m2</Text>
+                                        </View>   
                                     </View>
-                                    <View style={{width: 3*width/16, marginTop: 10, height: height/10}}>
-                                        <Text style={{marginTop:height/25, fontSize: 20}}>VND</Text>
+
+                                    <View style = {viewStyles.p_a}>
+                                        <View style={styles.item}>
+                                            <Text style={styles.label}>Chi phí:</Text>
+                                            <NumberFormat
+                                            value={formikProps.values.price}
+                                            displayType={'text'}
+                                            thousandSeparator={true}
+                                            renderText={value => (
+                                            <TextInput
+                                                keyboardType='numeric'
+                                                style={{marginLeft: 10}}
+                                                placeholder={'Ví dụ: 1,500,000'}
+                                                formikProps = {formikProps}
+                                                label='price'
+                                                onChangeText = {formikProps.handleChange('price')}
+                                                onBlur = {formikProps.handleBlur('price')}
+                                                value= {value}
+                                            />)}/>
+                                        <Text style = {styles.txtError}>
+                                            {formikProps.touched['price'] && formikProps.errors['price']} 
+                                        </Text>
+                                            <View style={viewStyles.divider}/>
+                                        </View>
+                                        <View style={{width: 3*width/16, marginTop: 10, height: height/10}}>
+                                            <Text style={{marginTop:height/25, fontSize: 20}}>VND</Text>
+                                        </View>
                                     </View>
-                                    </View>
-                                    <View style = {[styles.item, {height: height/4, width: width-40}]}>
+                                    
+                                    <View style = {viewStyles.description}>
                                         <Text style={styles.label}>Mô tả:</Text>
                                         <Textarea
                                             style={styles.textarea}
@@ -248,18 +374,17 @@ export default class PostScreen extends React.Component {
                                             placeholder={'Có gì mô tả đó ...'}
                                             placeholderTextColor={'#c7c7c7'}
                                             underlineColorAndroid={'transparent'}
-                                            value={formikProps.values.address}
+                                            value={formikProps.values.description}
                                             formikProps = {formikProps}
-                                            label='address'
-                                            formikKey = 'address'
-                                            onChangeText = {formikProps.handleChange('address')}
-                                            onBlur = {formikProps.handleBlur('address')}
-                                        />
+                                            label='description'
+                                            formikKey = 'description'
+                                            onChangeText = {formikProps.handleChange('description')}
+                                            onBlur = {formikProps.handleBlur('description')}/>
                                     </View>
                                 </View>
-                                <View style={{backgroundColor: 'white', marginTop: 20}}>
-                                    <Text style={{fontSize: 25, marginLeft: 20}}>Phần liên hệ:</Text>
 
+                                <Text style={styles.header}>Phần liên hệ:</Text>
+                                <View style={viewStyles.item}>
                                     <View style = {[styles.item, { width: width-40}]}>
                                         <RNPickerSelect
                                         placeholder={{
@@ -270,10 +395,8 @@ export default class PostScreen extends React.Component {
                                         onValueChange={ (value )=> this.onSelectCity(value)}
                                         style= {pickerSelectStyles}
                                         items={cities}
-                                        hideIcon={Platform.OS === "ios" ? false : true}
-                                        // disabled={!canSubmit}
-                                    />
-                                    <View style={{height: 1,backgroundColor: '#DADBDC', marginBottom: 10,width: width-40,marginTop: -10,}}/>
+                                        hideIcon={Platform.OS === "ios" ? false : true}/>
+                                        <View style={viewStyles.divider}/>
                                     </View>
 
                                     <View style = {[styles.item, { width: width-40}]}>
@@ -284,27 +407,23 @@ export default class PostScreen extends React.Component {
                                         style= {pickerSelectStyles}
                                         onValueChange={(value) => this.onSelectDistrict(value)}
                                         items={districts}
-                                        hideIcon={Platform.OS === "ios" ? false : true}
-                                        // disabled={!canSubmit}
-                                    />
-                                    <View style={{height: 1,backgroundColor: '#DADBDC', marginBottom: 10,width: width-40,marginTop: -10,}}/>
+                                        hideIcon={Platform.OS === "ios" ? false : true}/>
+                                        <View style={viewStyles.divider}/>
                                     </View>  
 
                                     <View style = {[styles.item, { width: width-40}]}>
                                         <RNPickerSelect
                                         placeholder={{
-                                            label: 'Chọn Quận/Xã ...',
+                                            label: 'Chọn Phường/Xã ...',
                                             value: null,
                                         }}
                                         onValueChange={(value) => {
-                                        
+                                            this.onSelectWard(value)
                                         }}
                                         style= {pickerSelectStyles}
                                         items={wards}
-                                        hideIcon={Platform.OS === "ios" ? false : true}
-                                        // disabled={!canSubmit}
-                                        />
-                                    <View style={{height: 1,backgroundColor: '#DADBDC', marginBottom: 10,width: width-40,marginTop: -10,}}/>
+                                        hideIcon={Platform.OS === "ios" ? false : true}/>
+                                        <View style={viewStyles.divider}/>
                                     </View> 
 
                                     <View style = {[styles.item, { width: width-40}]}>
@@ -316,10 +435,13 @@ export default class PostScreen extends React.Component {
                                         placeholder={'Ví dụ: Nguyễn Lương Bằng'}
                                         value={formikProps.values.street}
                                         onChangeText = {formikProps.handleChange('street')}
-                                        onBlur = {formikProps.handleBlur('street')}
-                                        />
-                                        <View style={{height: 1,backgroundColor: '#DADBDC', marginBottom: 10,width: width-40,marginTop: -10,}}/>
+                                        onBlur = {formikProps.handleBlur('street')}/>
+                                        <Text style = {styles.txtError}>
+                                            {formikProps.touched['street'] && formikProps.errors['street']} 
+                                        </Text>
+                                        <View style={viewStyles.divider}/>
                                     </View>  
+                                    
                                     <View style = {[styles.item, { width: width-40}]}>
                                         <Text style={styles.label}>Nhập số nhà:</Text>
                                         <TextInput
@@ -329,12 +451,35 @@ export default class PostScreen extends React.Component {
                                         placeholder={'Ví dụ: 54'}
                                         value={formikProps.values.apartment_number}
                                         onChangeText = {formikProps.handleChange('apartment_number')}
-                                        onBlur = {formikProps.handleBlur('apartment_number')}
-                                        />
-                                        <View style={{height: 1,backgroundColor: '#DADBDC', marginBottom: 10,width: width-40,marginTop: -10,}}/>
+                                        onBlur = {formikProps.handleBlur('apartment_number')}/>
+                                        <Text style = {styles.txtError}>
+                                            {formikProps.touched['apartment_number'] && formikProps.errors['apartment_number']} 
+                                        </Text>
+                                        <View style={viewStyles.divider}/>
                                     </View>               
                                 </View>
-                                <View style={styles.body}>
+
+                                <Text style={styles.header}>Phần liên lạc:</Text>
+                                <View style={viewStyles.item}> 
+                                    <View style = {[styles.item, { width: width-40}]}>
+                                        <Text style={styles.label}>Số điện thoại:</Text>
+                                        <TextInput
+                                        style={{marginLeft: 10}}
+                                        keyboardType='numeric'
+                                        formikProps = {formikProps}
+                                        label='phone'
+                                        placeholder={'Ví dụ: 0123456789'}
+                                        value={formikProps.values.phone}
+                                        onChangeText = {formikProps.handleChange('phone')}
+                                        onBlur = {formikProps.handleBlur('phone')}/>
+                                        <Text style = {styles.txtError}>
+                                            {formikProps.touched['phone'] && formikProps.errors['phone']} 
+                                        </Text>
+                                        <View style={viewStyles.divider}/>
+                                    </View>               
+                                </View>
+                                <Text style={styles.header}>Phần hình ảnh:</Text>
+                                <View style={viewStyles.item}>
                                     {this.renderSelectPhotoControl(this.state.localPhotos)}
                                 </View>
                                 <View style={styles.divider}/>
@@ -346,21 +491,20 @@ export default class PostScreen extends React.Component {
                                 </Button>
                             </View>)}
                     </Formik>
-                </KeyboardAwareScrollView>
+
                 <ActionSheet ref={o => (this.ActionSheet = o)}
                     title={'Confirm delete photo'}
                     options={['Confirm', 'Cancel']}
                     cancelButtonIndex={1}
                     destructiveButtonIndex={0}
-                    onPress={index => {
-                    this.onActionDeleteDone(index);}}/>
+                    onPress={index => {this.onActionDeleteDone(index);}}/>
                 <ActionSheet ref={o => (this.ActionSheetSelectPhoto = o)}
                     title={'Select photo'}
                     options={['Take Photo...', 'Choose from Library...', 'Cancel']}
                     cancelButtonIndex={2}
                     destructiveButtonIndex={1}
-                    onPress={index => {
-                    this.onActionSelectPhotoDone(index);}}/>
+                    onPress={index => {this.onActionSelectPhotoDone(index);}}/>
+                </KeyboardAwareScrollView>
             </SafeAreaView>
           </Fragment>
           : 
@@ -387,9 +531,15 @@ export default class PostScreen extends React.Component {
       }
 }
 const styles = StyleSheet.create({
+    txtError: {
+        fontSize: 12,
+        color: 'red', 
+        marginTop: -20, 
+        paddingBottom: 7,
+        marginLeft: 16
+    },
     item:{
-     marginTop: 10,
-     marginLeft: 20,
+     marginLeft: 10,
      width: 2*width/3+20,
      height: height/10,
     },
@@ -407,8 +557,8 @@ const styles = StyleSheet.create({
      },
      label: {
        fontSize: 17,
-       
      },
+     header:{fontSize: 25, marginLeft: 20, marginTop: 15},
      divider:{
        width: width,
        height: 1,
@@ -456,7 +606,7 @@ const styles = StyleSheet.create({
      },
      photoList: {
        height: 70,
-       marginTop: 15,
+       marginTop: -20,
        marginBottom: 15,
        marginRight: 10
      },
@@ -507,4 +657,35 @@ const styles = StyleSheet.create({
       color: 'black',
       paddingRight: 30, // to ensure the text is never behind the icon
     },
+  });
+  const viewStyles = StyleSheet.create({
+    item: {
+        backgroundColor: 'white',
+        marginTop: 10, 
+        paddingTop: 20,
+        paddingBottom: 20 ,
+        marginLeft: 10, 
+        marginRight: 10, 
+        borderWidth: 1, 
+        borderColor: '#AAC4D6', 
+        borderRadius: 10,},
+    divider: {
+        height: 1,
+        backgroundColor: '#DADBDC', 
+        marginBottom: 10,
+        width: width-40,
+        marginTop: -8,},
+    p_a:{
+        width: width-40, 
+        flexDirection: 'row'
+    },
+    description: {
+        marginTop: 10,
+        marginLeft: 10,
+        width: 2*width/3+20,
+        height: height/10,
+        height: height/4,
+        width: width-40
+    }
+    
   });

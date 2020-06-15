@@ -14,4 +14,5 @@ export default {
     SEARCH: 'Search',
     MAP: 'Map',
     DETAIL: 'Detail',
+    FILTER: 'Filter'
   }

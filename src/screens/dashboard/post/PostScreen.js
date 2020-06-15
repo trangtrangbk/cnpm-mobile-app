@@ -107,48 +107,29 @@ export const PostScreen = ({navigation}) => {
   return (
     <View style = {styles.container}>
       
-      <View style={{flexDirection: 'row'}}>
-        <TouchableOpacity
-          onPress={() => navigation.openDrawer()}>
-          <View  style={{marginLeft: 10}} >
-            <Image 
-              source= {icMenu}
-              style={{width: 25, height: 25, marginTop: 15}}/>
-          </View>
-        </TouchableOpacity>
-        <Text style={styles.title}>Đăng Phòng</Text>
-      </View>
+      <KeyboardAwareScrollView>
+        <Formik
+        initialValues = {{title:'' ,price: 0, area: 0, city: ''}}
+        onSubmit = {(values) => {
 
-      <View style={styles.divider}/>
-
-          <KeyboardAwareScrollView>
-
-          
-          <Formik
-            initialValues = {{title:'' ,price: 0, area: 0, city: ''}}
-            onSubmit = {(values) => {
-
-              alert(JSON.stringify(values)+ wards)
-            }}
+        alert(JSON.stringify(values)+ wards)
+        }}
             //validationSchema = {validationSchema}
-            >
-
-            {formikProps => (
-            <View>
-              <View style={{backgroundColor: 'yellow', marginTop: 10}}>
-                <Text style={{fontSize: 25, marginLeft: 20}}>Phần thông tin:</Text>
-                <View style = {[styles.item, { width: width-40}]}>
-                  <Text style={styles.label}>Nhập tiêu đề:</Text>
-                  <TextInput
-                    style={{marginLeft: 10}}
-                    formikProps = {formikProps}
-                    label='title'
-                    value={formikProps.values.title}
-                    onChangeText = {formikProps.handleChange('title')}
-                    onBlur = {formikProps.handleBlur('title')}
-                  />
-                  <View style={{height: 1,backgroundColor: '#DADBDC', marginBottom: 10,width: width-40,marginTop: -10,}}/>
-                </View>
+        >{formikProps => (
+          <View>
+            <View style={{backgroundColor: 'yellow', marginTop: 10}}>
+              <Text style={{fontSize: 25, marginLeft: 20}}>Phần thông tin:</Text>
+              <View style = {[styles.item, { width: width-40}]}>
+                <Text style={styles.label}>Nhập tiêu đề:</Text>
+                <TextInput
+                style={{marginLeft: 10}}
+                formikProps = {formikProps}
+                label='title'
+                value={formikProps.values.title}
+                onChangeText = {formikProps.handleChange('title')}
+                onBlur = {formikProps.handleBlur('title')}/>
+                <View style={{height: 1,backgroundColor: '#DADBDC', marginBottom: 10,width: width-40,marginTop: -10,}}/>
+              </View>
 
                 <View style = {[{width: width-40}, {flexDirection: 'row'}]}>
                   <View style={styles.item}>
