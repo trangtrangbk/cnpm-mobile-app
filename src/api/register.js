@@ -1,8 +1,5 @@
-
-import link from './link';
 const register =  (values) =>(
-
-    fetch('http://'+link+':5000/api/auth/signup', 
+    fetch('https://myfroom.herokuapp.com/api/register', 
     {
         method: 'POST',
         headers: {

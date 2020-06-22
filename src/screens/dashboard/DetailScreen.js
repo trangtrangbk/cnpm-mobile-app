@@ -1,27 +1,31 @@
 import React, { Component } from 'react';
 import { Image,StyleSheet, View, Dimensions , Linking, ViewComponent} from 'react-native';
-import { Ionicons,  FontAwesome ,  MaterialCommunityIcons, EvilIcons} from '@expo/vector-icons';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import Moment from 'moment';
+import Swiper from 'react-native-swiper'
+
+import moment from 'moment';
+
+let viLocale = require('moment/locale/vi');
+moment.locale('vi',viLocale)
 var { width,height } = Dimensions.get('window');
-Moment.locale('en');
+
+
 import {Button, Text, Block, Divider} from '../../components';
-import ShowEnergy from '../../components/ShowEnergy';
 import saveNew from '../../api/saveNew';
 import getNewsInStorage from '../../api/getNewsInStorage';
-
 import icEnergy from '../../assets/icons/energy.png';
 import icMap1 from '../../assets/icons/ic_map.png';
 import icCall1 from '../../assets/icons/ic_outgoing-call-detail.png';
 import icCalendar from '../../assets/icons/ic_calendar-detail.png';
 import icCall from '../../assets/icons/phone.png';
 import icLocation from '../../assets/icons/location.png'
+
 export const DetailScreen = ({navigation , route})=>{
   const [save, setSave] = React.useState(false);// data: list
   const [isShowText, setShowText] = React.useState(true);
 
   React.useEffect(() => {
-
+    
      getNewsInStorage()
       .then(result => {
         if(result.find(item => item._id === route.params.item._id)) setSave(true);
@@ -30,8 +34,6 @@ export const DetailScreen = ({navigation , route})=>{
       let myVar = setInterval(async ()=>{
         await setShowText(isShowText =>  !isShowText)
       }, 500);
-
-
     return () => {
         clearInterval(myVar);
     };
@@ -39,10 +41,16 @@ export const DetailScreen = ({navigation , route})=>{
 
 
   const handleSave = () =>{
-    saveNew(route.params.item)
-      .then(() => setSave(true));
+    const {toSave } = route.params;
+    setSave(true)
+    toSave()
   }
+  const handleUnSave = () =>{
+    const {unSave } = route.params;
+    setSave(false)
+    unSave();
 
+  }
   const makeCall = () => {
     let number = route.params.item.phone;
     let phoneNumber = '';
@@ -54,6 +62,7 @@ export const DetailScreen = ({navigation , route})=>{
     Linking.openURL(phoneNumber);
   };
   const _showInfo1 = () =>{
+    const { price, area} =route.params.item;
     return(
       <View style = {styles.info1}>
         <Text style={styles.title}>
@@ -65,7 +74,7 @@ export const DetailScreen = ({navigation , route})=>{
                   <Image source={icEnergy} style={styleEnergy.icon}/>
               </View> 
               <Text style = {{textTransform: 'uppercase', color: '#6E6E6E'}}> Giá: </Text>
-              <Text style = {{ color: '#F83A89'}}> 16 triệu VND/căn</Text>
+              <Text style = {{ color: '#F83A89'}}> {price.toFixed(0).replace(new RegExp('\\d(?=(\\d{3})+$)', 'g'), '$&,')} VND/căn</Text>
           </View>
           <View style =  {styles.divider1} />
           <View style = {{flexDirection:'row', marginTop: 10}}>
@@ -75,15 +84,14 @@ export const DetailScreen = ({navigation , route})=>{
             </Block>
             <Block center middle style = {{flex: 1, flexDirection: 'column'}}>
               <Text style = {{fontSize: 10}}>DIỆN TÍCH</Text>
-                <Text style = {{fontSize: 15, color: '#F83A89'}}>
-                  {route.params.item.area} m2
-                </Text>
+                <Text style = {{fontSize: 15, color: '#F83A89'}}> {area} m2 </Text>
             </Block>
           </View>
         </Block>
       </View>);
   }
   const _showInfo2 = () =>{
+    const { phone, address} =route.params.item;
     return(
       <View style = {styles.info2} >
         <Text style={{ marginBottom: 6 , marginLeft : 15, marginTop: 8, fontSize: 21}}>
@@ -91,15 +99,16 @@ export const DetailScreen = ({navigation , route})=>{
         </Text>
         <View style = {{flexDirection: 'row', marginLeft: 15}}>
           <Image source={icMap1} style={styles.icon}/>
-          <Text style = {{marginLeft: 8,lineHeight: 25, width: width-80}}> {route.params.item.address}</Text>
+          <Text style = {{marginLeft: 8,lineHeight: 25, width: width-80}}> {address}</Text>
         </View>
         <View style = {{flexDirection: 'row', marginLeft: 15, marginBottom: 10}}>
           <Image source={icCall1} style={[styles.icon, {marginTop: 5}]}/>
-          <Text style = {{marginLeft: 12, marginTop: 6}}>{route.params.item.phone}</Text>
+          <Text style = {{marginLeft: 12, marginTop: 6}}>{phone}</Text>
         </View>
       </View>);
   }
   const _showInfo3 = () =>{
+    const { createDay } =route.params.item;
     return(
       <View style = {styles.info3} >
         <Text style={{ marginBottom: 6 , marginLeft : 15, marginTop: 8, fontSize: 21}}>
@@ -107,18 +116,19 @@ export const DetailScreen = ({navigation , route})=>{
         </Text>
         <View style = {{flexDirection: 'row', marginLeft: 15, marginBottom: 10}}>
           <Image source={icCalendar} style={[styles.icon, {marginTop: 5}]}/>
-          <Text style = {{marginLeft: 12, marginTop: 6}}>10 Ngày trước - {Moment(route.params.item.createDay).format('DD/MM/YYYY')}</Text>
+          <Text style = {{marginLeft: 12, marginTop: 6}}>{moment(createDay).fromNow()} - {moment(createDay).format('DD/MM/YYYY')}</Text>
         </View>
       </View>);
   }
   const _showInfo4 = () => {
+    const { description } =route.params.item;
     return(
       <View style = {styles.info4} >
         <Text style={{ marginBottom: 6 , marginLeft : 15, marginTop: 8, fontSize: 21}}>
           Chi tiết
         </Text>
         <View style = {{ marginLeft: 15, marginBottom: 10 }}>
-          <Text style = {{fontSize: 14, lineHeight: 25}}>{route.params.item.description}</Text>
+          <Text style = {{fontSize: 14, lineHeight: 25}}>{description}</Text>
         </View>
       </View>);
   }
@@ -140,7 +150,7 @@ export const DetailScreen = ({navigation , route})=>{
           :
           <Button 
           style = {[styles.button_below, {backgroundColor: '#4D64F0'}]}
-          onPress={() =>handleSave()}>
+          onPress={() =>handleUnSave()}>
             <Text button style = {styles.fontSize}>Đã lưu</Text>
           </Button>}
         </View>
@@ -151,6 +161,21 @@ export const DetailScreen = ({navigation , route})=>{
           </Button>
         </View>
       </View>);
+  }
+  const _showImage = () =>{
+
+    return(
+        <Swiper style= {{height: 250}} showsButtons={true}>
+          {route.params.item.picture.map(item =>{
+            return (
+              <Image
+              style = {styles.img}
+              source={{
+                uri: item,
+            }}/> 
+            )})}
+        </Swiper>
+    )
   }
   const _showMain = () =>{
     return(
@@ -165,10 +190,7 @@ export const DetailScreen = ({navigation , route})=>{
     <View style = {{flex: 1}}>
       <KeyboardAwareScrollView style = {styles.main}>
         <View>
-          <Image
-            style = {styles.img}
-            source={require('../../assets/image-background.png')} 
-          /> 
+          {_showImage()}
         </View>
         { _showMain() }
       </KeyboardAwareScrollView>

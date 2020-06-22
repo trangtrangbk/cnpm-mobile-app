@@ -101,10 +101,10 @@ export default class PostScreen extends React.Component {
         let myVar = setInterval(async ()=>{
             if(!this.state.uploading) {
                 postNew(token,{...values, picture: this.state.photos})
-                .then(res => {
-                    this.setState({loading: true})
-                    this._onMessages(navigation)
-                })
+                    .then(res => {
+                        this.setState({loading: false})
+                        this._onMessages(navigation)
+                    })
                 clearInterval(myVar);
             }
         }, 1000);
@@ -244,7 +244,7 @@ export default class PostScreen extends React.Component {
     };
     _showLoading = () =>{
         if(this.state.loading) 
-          return <Spinner visible={this.state.loading} textContent={"Waiting..."} textStyle={{color: '#FFF'}}/>
+          return <Spinner visible={this.state.loading} textStyle={{color: '#FFF'}}/>
       }
     phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
     validationSchema = yup.object().shape({
@@ -509,20 +509,6 @@ export default class PostScreen extends React.Component {
           </Fragment>
           : 
           <Fragment>
-            <StatusBar barStyle="dark-content" />
-            <View style={{flexDirection: 'row'}}>
-                <TouchableOpacity
-                onPress={() =>navigation.openDrawer()}>
-                <View  style={{marginLeft: 10}} >
-                    <Image 
-                    source= {icMenu}
-                    style={{width: 25, height: 25, marginTop: 15}}/>
-                </View>
-                </TouchableOpacity>
-                <Text style={styles.title}>Đăng Phòng</Text>
-            </View>
-
-            <View style={styles.divider}/>
             <View>
                <Text>Vui lòng đang nhập để thực hiện các tác vụ.</Text> 
             </View>

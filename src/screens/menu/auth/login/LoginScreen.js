@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
-import { Dimensions } from 'react-native';
+import React from 'react';
+import { Dimensions, ToastAndroid} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import Spinner from 'react-native-loading-spinner-overlay';
 import { Formik } from 'formik'
 import * as yup from 'yup'
 
@@ -18,22 +19,39 @@ const validationSchema = yup.object().shape({
   password: yup.string().label('Password').required().min(3, 'Seems a bit short...').max(20, 'We prefer insecure system, try a shorter password')
 })
 
-const Login = async (values, navigation, signIn) =>{
 
-  login(values)
-    .then(res => {
-      if(res.token)  {
-        console.log(res.token, ' Login')
-        saveToken(res.token);
-        saveID(res.id);
-        signIn();
-        navigation.navigate(Route.DASHBOARD) 
-      }
-      else console.log('Has not token')
-    })
-}
 export const LoginScreen = ({ navigation }) => {
    const { signIn } = React.useContext(AuthContext);
+   const [loading, setLoading] = React.useState(false);
+
+   const Login = async (values, navigation, signIn) =>{
+     setLoading(true)
+    login(values)
+      .then( res => {
+        if(res.token)  {
+          saveToken(res.token);
+          saveID(res.id);
+          signIn();
+          setLoading(false)
+          onSuccess();
+          navigation.navigate(Route.DASHBOARD) 
+        }
+        else {
+          setLoading(false)
+          onFail();
+        }
+      })
+  }
+  const onSuccess = () =>{
+    ToastAndroid.show("Login success", ToastAndroid.SHORT);
+  }
+  const onFail = () => {
+    ToastAndroid.show("Wrong username or password!", ToastAndroid.SHORT);
+  };
+  const _showLoading = () =>{
+    if(loading) 
+      return <Spinner visible={loading}  textStyle={{color: '#FFF'}}/>
+  }
     return (
       <KeyboardAwareScrollView
         enabled
@@ -41,6 +59,7 @@ export const LoginScreen = ({ navigation }) => {
         style={{ flex: 1 }}
         keyboardVerticalOffset={height * 0.2}
       >
+        {_showLoading()}
         <Formik
         initialValues = {{email : '', password: ''}}
       
@@ -53,7 +72,7 @@ export const LoginScreen = ({ navigation }) => {
             <Block center middle style ={{marginTop: 100}}>
               <Block flex={2.5} center>
                 <Text h3 style={{ marginBottom: 6 }}>
-                  Sign in to Trohot
+                  Sign in to F-ROOM
                 </Text>
                 <Text paragraph color="black3">
                   Please enter your credentials to proceed.
@@ -73,15 +92,15 @@ export const LoginScreen = ({ navigation }) => {
                     password
                     label="Password"
                     style={{ marginBottom: 25 }}
-                    rightLabel={
-                      <Text
-                        paragraph
-                        color="gray"
-                        onPress={() => navigation.navigate('Forgot')}
-                      >
-                        Forgot password?
-                      </Text>
-                    }
+                    // rightLabel={
+                    //   <Text
+                    //     paragraph
+                    //     color="gray"
+                    //     onPress={() => navigation.navigate('Forgot')}
+                    //   >
+                    //     Forgot password?
+                    //   </Text>
+                    // }
                     formikProps = {formikProps}
                     formikKey = 'password'
                   />
@@ -90,7 +109,7 @@ export const LoginScreen = ({ navigation }) => {
                     onPress={ formikProps.handleSubmit}
                     style={{ marginBottom: 12 }}
                   >
-                  <Text button >Sign in</Text>
+                    <Text button >Sign in</Text>
                   </Button>
                   <Text paragraph color="gray">
                     Don't have an account? <Text

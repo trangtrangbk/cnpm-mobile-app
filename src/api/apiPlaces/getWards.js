@@ -1,4 +1,5 @@
 const getWards = async (city,district) =>(
+    
     await fetch( `https://hostcuatui.herokuapp.com/api/city/${city}/district/${district}`,
     {
         method: 'GET',

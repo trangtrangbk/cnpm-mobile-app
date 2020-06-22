@@ -22,15 +22,15 @@ const validationSchema = yup.object().shape({
 const SignUp = async (values, navigation) =>{
   register(values)
     .then(res => {
-      if(res.message === 'Done')  onSuccess(navigation)
+      if(res.name !=='') onSuccess(navigation)
       else onFail();
     })
 
 }
 const onSuccess = (navigation) =>{
   Alert.alert(
-    'Notice',
-    'SignUp on Successfully',
+    'Thông báo',
+    'Đăng ký thành công!',
     [
       { text:'OK', onPress: () => navigation.navigate(Route.LOGIN) }
     ],
@@ -38,16 +38,7 @@ const onSuccess = (navigation) =>{
   )
 }
 const onFail = () => {
-  Alert.alert(
-    'Notice',
-    'Email has been used by other'
-    [
-      { text:'OK', onPress: { }}
-    ],
-  )
-}
-const encryptPassword = ( password ) => {
-
+  alert('Tài khoản đã tồn tại, vui lòng kiểm tra lại!')
 }
 export const LogupScreen = ({ navigation }) =>  {
 

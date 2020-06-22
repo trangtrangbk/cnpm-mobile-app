@@ -6,7 +6,7 @@ import { Button } from 'expo-ui-kit';
 
 import { HistoryView } from './HistoryView'
 import { HistoryDetail } from './HistoryDetail'
-import { HistoryChange } from './HistoryChange';
+import  HistoryChange  from './HistoryChange';
 
 
 import icLeft from '../../../assets/icons/ic_left.png';
@@ -31,12 +31,7 @@ const HistoryStackScreen = ({navigation}) => (
       
       options={{
         headerTransparent: true,
-        title: null,
-        headerLeft: () => (
-          <Button transparent onPress={() => navigation.navigate(Route.LOGIN)}>
-            <Image source = { icLeft } style={{width: 20, height: 20, marginLeft: 15}}/>
-          </Button>
-        ),
+        title: 'Chỉnh sửa bài viết của bạn',
       }}
       />
     </Stack.Navigator>

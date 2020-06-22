@@ -15,6 +15,7 @@ export const SaveScreen = ({navigation}) => {
     return () => {
     };
   }, []);
+
   const _showMessages = () =>{
     console.log(data.length)
     if(data.length===0) return (
@@ -29,7 +30,7 @@ export const SaveScreen = ({navigation}) => {
       <KeyboardAwareScrollView>
         <FlatList
             data={data}
-            renderItem={({ item }) => <Item navigation= { navigation } item = { item } />}
+            renderItem={({ item }) => <Item navigation= { navigation } item = { item }/>}
             keyExtractor={item => item._id}/> 
       </KeyboardAwareScrollView>
     </View>

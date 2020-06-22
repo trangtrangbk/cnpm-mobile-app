@@ -1,4 +1,3 @@
-
 const checkLogin = async (token) =>(
     await fetch('https://myfroom.herokuapp.com/api/auth', 
     {

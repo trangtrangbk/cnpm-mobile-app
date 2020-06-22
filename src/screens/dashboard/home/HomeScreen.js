@@ -14,28 +14,32 @@ import icPrice from '../../../assets/icons/price.png'
 
 import { Item }from '../../../components/Item';
 import getNews from '../../../api/getNews';
-import removeItem from '../../../api/removeNew';
+import getNewsFilter from '../../../api/getNewsFilter';
 import Route from '../../../constants/Route';
 var { width,height } = Dimensions.get('window');
 
 export const HomeScreen = ({navigation}) => {
  
-  const [listNew, setListNew] = React.useState([]);
+  const [listNews, setListNews] = React.useState([]);
   const [page, setPage] = React.useState(1);
   const [refreshing, setRefresh] = React.useState(false);
   const [isLoading, setLoading] = React.useState(true);
   const [isShowFilter, setShowFilter] = React.useState(false);
 
-  const [city, setCity] = React.useState(1);
-  const [district, setDistrict] = React.useState(2);
-  const [ward, setWard] = React.useState('');
+  const [city, setCity] = React.useState({code: -1, name: ''});
+  const [district, setDistrict] = React.useState({code: -1, name:''});
+  const [ward, setWard] = React.useState({code: -1, name:''});
+  const [price, setPrice] = React.useState({code: -1, title: ''});
+  const [area, setArea] = React.useState({code: -1, title: ''});
+
+  const [data, setData] = React.useState(null);
 
 
   useEffect(() => {
     setShowFilter(true)
     getNews(1)
       .then(res => {
-        setListNew(res.data);
+        setListNews(res.data);
         setLoading(()=>false)
       })
       console.log("HOME____________________Component-Did-mount");
@@ -44,31 +48,41 @@ export const HomeScreen = ({navigation}) => {
     };
   }, []);
 
+  const _handleLoadDataFilter = ({city}, {district}, {ward}, {price}, {area}) =>{
+    console.log('HomeScreen')
+    const bodyData = {city, district, ward, price,area}
+    console.log(bodyData)
+    setData(bodyData);
+    getNewsFilter(1, bodyData)
+      .then(res => {
+        console.log(res)
+      })
+  }
+
   const handleLoadMore = () =>{
     getNews(page+1)
       .then(res =>{
         setPage(page+1),
-        setListNew([...listNew,...res.data])
+        setListNews([...listNews,...res.data])
       })
   }
   const _onRefresh = () => {
     setShowFilter(true)
     setRefresh(true)
     setPage(1)
-    setListNew([])
+    setListNews([])
     getNews(1)
       .then(res => {
-        setListNew(res.data);
+        setListNews(res.data);
         setRefresh(false)
       })
   }
-
   const _filterButtonHandler = () =>{
     setShowFilter(isShowFilter=> !isShowFilter)
   }  
   const _showLoading = () =>{
     if(isLoading) 
-      return <Spinner visible={isLoading} textContent={"Loading..."} textStyle={{color: '#FFF'}}/>
+      return <Spinner visible={isLoading} textStyle={{color: '#FFF'}}/>
   }
   const _showTopToolbar = () =>{
     return <View style={styles.TopToolbar}>
@@ -105,61 +119,148 @@ export const HomeScreen = ({navigation}) => {
         </TouchableOpacity>
       </View>
   }
+
   const _showFilter = (navigation) => {
+
+    const _handleFilterCity = (item) => {
+      setCity({code: item.code, name: item.title})
+      setDistrict({code: -1, name:''})
+      setWard({code: -1, name: ''})
+    }
+    const _handleFilterDistrict = (item) => {
+      setDistrict({code: item.code, name: item.title})
+      setWard({code: -1, name: ''})
+    }
+    const _handleFilterWard = (item) => {
+      setWard({code: item.code, name: item.title})
+    }
+    const _handleFilterArea = ({code, title}) => {
+      setArea({code, title})
+    }
+    const _handleFilterPrice= ({code, title}) => {
+      setPrice({code, title})
+    }
+    const _handleUnFilterCity = () => {
+      setCity({code: -1, name: ''})
+      _handleUnFilterDistrict();
+    }
+    const _handleUnFilterDistrict = () => {
+      setDistrict({code: -1, name:''})
+      _handleUnFilterWard();
+    }
+    const _handleUnFilterWard = () => {
+      setWard({code: -1, name: ''})
+    }
       if(isShowFilter) 
         return (
-        <View style={styleFilters.container}>
-          <View style = {{width:width/2-20, marginLeft: 15,}}>
-            <TouchableOpacity
-            onPress = {()=> navigation.navigate(Route.FILTER,{filter: 1, title: 'Chọn Tỉnh/Thành phố'})}
-            style = {styleFilters.item}>
-              <View  style={{marginLeft: 10, flexDirection: 'row'}} >
-                <Image source= {icLocationFilter} style ={styleFilters.icon}/>
-                <Text style={styleFilters.title}>Tỉnh/Thành Phố</Text>
-                <Image source= {icDown} style ={styleFilters.icon1}/>
+            <View style={styleFilters.container}>
+              <View style = {{width:width/2-20, marginLeft: 15,}}>
+                <TouchableOpacity
+                onPress = {()=> navigation.push(Route.FILTER,
+                  {
+                    filter: 1, 
+                    city ,
+                    price,
+                    area,
+                    title: 'Chọn Tỉnh/Thành phố', 
+                    _handleFilter: _handleFilterCity, 
+                    _handleUnFilter: _handleUnFilterCity,
+                    _handleLoadDataFilter
+                  })}
+                style = {styleFilters.item}>
+                  <View  style={{marginLeft: 10, flexDirection: 'row'}} >
+                    <Image source= {icLocationFilter} style ={styleFilters.icon}/>
+                        <Text style={styleFilters.title}>{city.name ===''? 'Tỉnh/Thành Phố': city.name}</Text>
+                    <Image source= {icDown} style ={styleFilters.icon1}/>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                onPress = {()=> navigation.push(Route.FILTER,
+                  {
+                    filter: 2, 
+                    city, 
+                    district, 
+                    price,
+                    area,
+                    title: 'Chọn Quận/Huyện',
+                    _handleFilter: _handleFilterDistrict, 
+                    _handleUnFilter: _handleUnFilterDistrict, 
+                    _handleLoadDataFilter
+                  })}
+                style = {[styleFilters.item, {marginTop: 6}]}>
+                  <View  style={{marginLeft: 10, flexDirection: 'row'}} >
+                    <Image source= {icLocationFilter} style ={styleFilters.icon}/>
+                      <Text style={styleFilters.title}>{district.name ===''? 'Quận/Huyện': district.name}</Text>
+                    <Image source= {icDown} style ={styleFilters.icon1}/>
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity
+                onPress = {()=> navigation.push(Route.FILTER,
+                  {
+                    filter: 3, 
+                    city, 
+                    district, 
+                    ward, 
+                    price,
+                    area,
+                    title: 'Chọn Phường/Xã', 
+                    _handleFilter: _handleFilterWard, 
+                    _handleUnFilter:_handleUnFilterWard, 
+                    _handleLoadDataFilter
+                  })}
+                style = {[styleFilters.item, {marginTop: 6}]}>
+                  <View  style={{marginLeft: 10, flexDirection: 'row'}} >
+                    <Image source= {icLocationFilter} style ={styleFilters.icon}/>
+                    <Text style={styleFilters.title} numberOfLines={1}>{ward.name ===''? 'Phường/Xã': ward.name}</Text>
+                    <Image source= {icDown} style ={styleFilters.icon1}/>
+                  </View>
+                </TouchableOpacity>
               </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-             onPress = {()=> navigation.navigate(Route.FILTER,{filter: 2, city, title: 'Chọn Quận/Huyện'})}
-             style = {[styleFilters.item, {marginTop: 6}]}>
-              <View  style={{marginLeft: 10, flexDirection: 'row'}} >
-                <Image source= {icLocationFilter} style ={styleFilters.icon}/>
-                <Text style={styleFilters.title}>Quận/Huyện</Text>
-                <Image source= {icDown} style ={styleFilters.icon1}/>
-              </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-            onPress = {()=> navigation.navigate(Route.FILTER,{filter: 3, city, district, title: 'Chọn Phường/Xã'})}
-            style = {[styleFilters.item, {marginTop: 6}]}>
-              <View  style={{marginLeft: 10, flexDirection: 'row'}} >
-                <Image source= {icLocationFilter} style ={styleFilters.icon}/>
-                <Text style={styleFilters.title}>Phường/Xã</Text>
-                <Image source= {icDown} style ={styleFilters.icon1}/>
-              </View>
-            </TouchableOpacity>
-          </View>
 
-          <View style = {{width:width/2- 20, marginLeft: 5}}>
-          <TouchableOpacity
-            onPress = {()=> navigation.navigate(Route.FILTER,{filter: 4, title: 'Chọn khoảng giá'})}
-            style = {styleFilters.item}>
-              <View  style={{marginLeft: 10, flexDirection: 'row'}} >
-                <Image source= {icPrice} style ={styleFilters.icon}/>
-                <Text style={styleFilters.title}>Chọn khoảng giá</Text>
-                <Image source= {icDown} style ={styleFilters.icon1}/>
+              <View style = {{width:width/2- 20, marginLeft: 5}}>
+              <TouchableOpacity
+                onPress = {()=> navigation.navigate(Route.FILTER,
+                  {
+                    filter: 4, 
+                    title: 'Chọn khoảng giá',
+                    city, 
+                    district, 
+                    ward, 
+                    price,
+                    area,
+                    _handleFilter: _handleFilterPrice,
+                    _handleLoadDataFilter
+                  })}
+                style = {styleFilters.item}>
+                  <View  style={{marginLeft: 10, flexDirection: 'row'}} >
+                    <Image source= {icPrice} style ={styleFilters.icon}/>
+                      <Text style={styleFilters.title} numberOfLines={1} >{price.title === ''?'Chọn giá': price.title.replace(',', ' tới ')}</Text>
+                    <Image source= {icDown} style ={styleFilters.icon1}/>
+                  </View>
+                </TouchableOpacity>
+              <TouchableOpacity
+                onPress = {()=> navigation.navigate(Route.FILTER,
+                  {
+                    filter: 5, 
+                    title: 'Chọn diện tích',
+                    city, 
+                    district, 
+                    ward, 
+                    price,
+                    area,
+                    _handleFilter: _handleFilterArea,
+                    _handleLoadDataFilter
+                  })}
+                style = {[styleFilters.item, {marginTop: 6}]}>
+                  <View  style={{marginLeft: 10, flexDirection: 'row'}} >
+                    <Image source= {icArea} style ={styleFilters.icon}/>
+                      <Text style={styleFilters.title} numberOfLines={1} >{area.title ===''? 'Chọn diện tích': area.title.replace(',', ' tới ')}</Text>
+                    <Image source= {icDown} style ={styleFilters.icon1}/>
+                  </View>
+              </TouchableOpacity>
               </View>
-            </TouchableOpacity>
-            <TouchableOpacity
-            onPress = {()=> navigation.navigate(Route.FILTER,{filter: 5, title: 'Chọn diện tích'})}
-            style = {[styleFilters.item, {marginTop: 6}]}>
-              <View  style={{marginLeft: 10, flexDirection: 'row'}} >
-                <Image source= {icArea} style ={styleFilters.icon}/>
-                <Text style={styleFilters.title}>Chọn diện tích</Text>
-                <Image source= {icDown} style ={styleFilters.icon1}/>
-              </View>
-            </TouchableOpacity>
-          </View>
-        </View> )
+            </View> 
+         )
   }
 
   return (
@@ -170,7 +271,7 @@ export const HomeScreen = ({navigation}) => {
        <View style={styles.divider}/>
         {_showLoading()}
       <FlatList
-        data={listNew}
+        data={listNews}
         renderItem={({ item }) => <Item navigation= { navigation } item = { item } />}
         keyExtractor={item => item._id}
         refreshControl={
@@ -181,7 +282,6 @@ export const HomeScreen = ({navigation}) => {
         onEndReached = { handleLoadMore }
         onScroll ={(e) =>setShowFilter(false)}
         onEndThreshold = { 0 }/>
-
         <TouchableOpacity
           onPress={_filterButtonHandler}
           style={styles.downButton}>

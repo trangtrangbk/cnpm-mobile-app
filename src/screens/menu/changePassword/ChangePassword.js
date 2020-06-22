@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
-import { StyleSheet, Dimensions, Alert } from 'react-native';
-
+import { StyleSheet, Dimensions, Alert, ToastAndroid} from 'react-native';
+import Spinner from 'react-native-loading-spinner-overlay';
 import changePassword from '../../../api/changepassword'
 import getToken from '../../../api/getToken';
 import Route from '../../../constants/Route';
@@ -20,50 +20,50 @@ const validationSchema = yup.object().shape({
   }),
 })
 
-const changePass = async (values , navigation) =>{
-  getToken()
-    .then(token => {
-      changePassword( token, values.currentPassword, values.password)
-        .then(res => {
-          console.log(res.message)
-          if(res.message === 'Password was changed') {
-            console.log(res.message)
-            onSuccess(navigation)
-          }
-          else onFail()
-        });
-      
-    })
-}
-
-const onSuccess = (navigation) =>{
-  console.log("Done")
-  Alert.alert(
-    'Notice',
-    'Change password on Successfully',
-    [
-      { text:'OK', onPress: () => navigation.navigate(Route.DASHBOARD) }
-    ],
-    {cancelable: false}
-  )
-}
-const onFail = (navigation) => {
-  console.log("Error")
-  Alert.alert(
-    'Notice',
-    'Please check your password',
-    [
-      { text:'OK' }
-    ],
-    {cancelable: false}
-  )
-}
-
 export const ChangePassword = ({ navigation }) =>{
+  const [loading, setLoading] = React.useState(false);
+  const changePass = async (values , navigation) =>{
+    setLoading(true)
+    getToken()
+      .then(token => {
+        changePassword( token, values.currentPassword, values.password)
+          .then(res => {
+            console.log(res)
+            if(res.message === 'Password was changed') {
+              setLoading(false)
+              onSuccess(navigation)
+            }
+            else {
+              setLoading(false)
+              onFail();
+            }
+          });
+        
+      })
+  }
+  
+  const onSuccess = (navigation) =>{
+    Alert.alert(
+      'Notice',
+      'Change password on Successfully',
+      [
+        { text:'OK', onPress: () => navigation.navigate(Route.DASHBOARD) }
+      ],
+      {cancelable: false}
+    )
+  }
+  const onFail = () => {
+    ToastAndroid.show("Wrong username or password!", ToastAndroid.SHORT);
+  };
+  const _showLoading = () =>{
+    if(loading) 
+      return <Spinner visible={loading}  textStyle={{color: '#FFF'}}/>
+  }
     return (
       <KeyboardAwareScrollView 
       style={{ marginVertical: 60 }} 
       showsVerticalScrollIndicator={false}>
+        {_showLoading()}
         <Formik
         initialValues = {{currentPassword :'', password: '', confirmPassword: ''}}
         onSubmit = {(values) => {

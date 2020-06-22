@@ -1,5 +1,5 @@
 import React, {useEffect } from 'react';
-import Animated from 'react-native-reanimated';
+import Animated, { set } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
@@ -21,53 +21,85 @@ export default () => {
 
   const [progress, setProgress] = React.useState(new Animated.Value(0));
   
-  const [token, setToken] = React.useState(null);
-  const [user, setUser] = React.useState(null);
+  const [token, setToken] = React.useState('');
+  const [user, setUser] = React.useState({name: '', email: ''});
     
-  const authContext = React.useMemo(() => {
-    return {
-      signIn: async () => {
-        console.log('signIn MAIN')
-        getToken()
-          .then( item => {
-            console.log(item, '----------------- signIn MAIN')
-            setToken(item);
-            checkLogin(item).then(res => {
-              console.log(JSON.stringify(res),'get --- get')
+  useEffect(() => {
+    getToken()
+      .then(tk => {
+        setToken(tk)
+        checkLogin(tk)
+          .then(res => {
+            if(res.msg) {
               setUser(res.resultUser)
-              console.log(JSON.stringify(res.resultUser )+'-------------- res.resultUser' )
-              saveUser(res.resultUser)
-            })
+            }else {
+              saveToken('')
+              setToken('');
+            }
           })
-      },
-      chanInfo: async () =>{
-        console.log('Change Information')
-        getToken()
-          .then( token => {
-            setToken(token)
-            getUser().then( user => setUser(user))})
-      },
-      signOut: () => {
+          .catch(err=> {
+            saveToken('')
+            setToken('');
+          })
+        })
+      .catch(err=> {
         saveToken('')
         setToken('');
-        saveUser(null);
-      }
-    };
-  }, []);
-
-
-  useEffect(() => {
-    getUser().then(user => {
-      console.log(user, '------------useEffect')
-      setUser(user)
-    });
-    getToken().then(token => {setToken(token)})
-    console.log("Main component-Did-mount");
+        })
     return () => {
       console.log("component-Will-Un-mount");
     };
   }, []);
 
+
+  const authContext = React.useMemo(() => {
+    return {
+      signIn: async () => {
+        console.log('signIn MAIN')
+        getToken()
+          .then(tk => {
+            setToken(tk)
+            checkLogin(tk)
+              .then(res => setUser(res.resultUser))
+              .catch(err=> {
+                saveToken('')
+                setToken('');
+              })
+            })
+          .catch(err => {
+            saveToken('')
+            setToken('');
+            })
+      },
+      chanInfo: async () =>{
+        getToken()
+          .then(tk => {
+            console.log(token)
+            checkLogin(tk)
+              .then(res => {
+                console.log(res.resultUser, '-------------')
+                getUser()
+                  .then(u=> setUser({name: u.name, email: res.resultUser.email, phoneNumber: u.phoneNumber, address: u.address}))
+
+              })
+            .catch(err=> {
+              saveToken('')
+              setToken('');
+            })
+          })
+          .catch(err => {
+            saveToken('')
+            setToken('');
+          })
+
+         
+      },
+      signOut: () => {
+        saveToken('')
+        setToken('');
+      }
+    };
+  }, []);
 
   const scale = Animated.interpolate(progress, {
     inputRange: [0, 1],

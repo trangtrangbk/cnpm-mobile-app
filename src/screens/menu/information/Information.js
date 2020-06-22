@@ -1,69 +1,84 @@
-import React from 'react';
+import React ,{useEffect} from 'react';
 import { View, StyleSheet, Text, Image ,Dimensions, TextInput, Alert} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import Spinner from 'react-native-loading-spinner-overlay';
 import Textarea from 'react-native-textarea';
 import { Formik } from 'formik'
 import * as yup from 'yup'
 
 var { width,height } = Dimensions.get('window');
-
 import { Button, Block } from '../../../components';
-import  changeInfo  from '../../../api/changeinfo';
-import getToken from '../../../api/getToken';
 import Route from '../../../constants/Route';
-import saveToken from '../../../api/saveToken';
-import saveUser from '../../../api/saveUser';
+import icAvatar from '../../../assets/icons/avatar.png'
+
 import { AuthContext } from '../../../contexts/AuthContext' 
+import  changeInfo  from '../../../api/changeinfo';
+import getToken from '../../../storage/getToken';
+import getID from '../../../storage/getID';
+import saveUser from '../../../storage/saveUser'
+import saveNew from '../../../api/saveNew';
 
-
-const phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
-
-const validationSchema = yup.object().shape({
-  name: yup.string().label('name').required('Name is a required field'),
-  phone: yup.string().matches(phoneRegExp, 'Phone number is not valid'),
-})
-
-const ChangeInfo = async (values , navigation, chanInfo) =>{
-  getToken()
-    .then(token =>{
-      console.log(token)
-      changeInfo(token, values.name,  values.address, values.phone)
-      .then(res => {
-        if(res.msg === 'Success') {
-          saveToken(res.token)
-          saveUser(res.user)
-          chanInfo();
-          onSuccess(navigation)
-        }
-        else onFail();
-      })
-    })
-}
-
-const onSuccess = (navigation) =>{
-  Alert.alert(
-    'Notice',
-    'ChangeInfo on Successfully',
-    [
-      { text:'OK', onPress: () => navigation.navigate(Route.DASHBOARD) }
-    ],
-    {cancelable: false}
-  )
-}
-const onFail = () => {
-  Alert.alert(
-    'Notice',
-    'An error occurred'
-    [
-      { text:'OK', onPress: { }}
-    ],
-  )
-}
 export const Information = ({route, navigation}) => {
-  const { chanInfo } = React.useContext(AuthContext);
+  const {chanInfo } = React.useContext(AuthContext);
+  const [id, setId] = React.useState('');
+  const [token, setToken] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
+
+  useEffect(() => {
+    getID().then(ID => setId(ID))
+    getToken().then(token => setToken(token))
+  }, []);
+
+  const phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+
+  const validationSchema = yup.object().shape({
+    name: yup.string().label('name').required('Name is a required field'),
+    phoneNumber: yup.string().matches(phoneRegExp, 'Phone number is not valid'),
+  })
+  
+  const ChangeInfo = async (id, token, values, navigation, chanInfo) =>{
+    setLoading(true)
+    saveUser(null)
+    changeInfo( id ,token, values.name,  values.address, values.phoneNumber)
+        .then(res => {
+          saveUser({name:values.name, address:values.address, phoneNumber: values.phoneNumber })
+            chanInfo();
+            setLoading(false)
+            onSuccess(navigation)})
+        .catch(error=> {
+          setLoading(false)
+          onFail();
+        })
+  }
+  
+  const onSuccess = (navigation) =>{
+    Alert.alert(
+      'Notice',
+      'ChangeInfo on Successfully',
+      [
+        { text:'OK', onPress: () => navigation.navigate(Route.DASHBOARD) }
+      ],
+      {cancelable: false}
+    )
+  }
+  const onFail = () => {
+    Alert.alert(
+      'Notice',
+      'An error occurred'
+      [
+        { text:'OK'}
+      ],
+    )
+  }
+
+  const _showLoading = () =>{
+    if(loading) 
+      return <Spinner visible={loading}  textStyle={{color: '#FFF'}}/>
+  }
   return (
     <View style = {{flex: 1 }}>
       <KeyboardAwareScrollView style = {styles.main}>
+        {_showLoading()}
         <View>
           <Image
           style = {styles.img}
@@ -71,15 +86,8 @@ export const Information = ({route, navigation}) => {
           /> 
         </View>
         <View style={styles.icon}>
-          <Image 
-          source={{
-            uri: 'https://react-ui-kit.com/assets/img/react-ui-kit-logo-green.png',
-            height: 100,
-            width: 100,
-            scale: 0.5,
-          }}
-          style = {styles.avatar}/>
-          <Text style={styles.txtName}>{route.params.user.username}</Text>
+        <Image source={icAvatar} style = {styles.avatar}/>
+          <Text style={styles.txtName}>{route.params.user.name}</Text>
         <Text style={styles.txtEmail}>{route.params.user.email}</Text>
         </View>
         <View style={ styles.content}> 
@@ -91,36 +99,36 @@ export const Information = ({route, navigation}) => {
 
         {formikProps => (
           <Block>
-            <Text style={styles.labelName}>Name:</Text>
+            <Text style={styles.labelName}>Họ tên:</Text>
 
             <TextInput 
             style={styles.input}
             formikProps = {formikProps}
-            label='username'
-            value={formikProps.values.username}
-            onChangeText = {formikProps.handleChange('username')}
-            onBlur = {formikProps.handleBlur('username')}
+            label='name'
+            value={formikProps.values.name}
+            onChangeText = {formikProps.handleChange('name')}
+            onBlur = {formikProps.handleBlur('name')}
             />
             <Text style = {styles.txtError}>
-              {formikProps.touched['username'] && formikProps.errors['username']} 
+              {formikProps.touched['name'] && formikProps.errors['name']} 
             </Text>
-            <Text style={styles.labelPhone} >Phone: </Text>
+            <Text style={styles.labelPhone} >Số điện thoại: </Text>
 
             <TextInput 
             style={styles.input} 
             keyboardType = 'phone-pad'
             placeholder={'Please enter your number phone! '}
-            label = 'phone'
+            label = 'phoneNumber'
             formikProps = {formikProps}
-            value={formikProps.values.phone}
-            // formikKey = 'phone'
-            onChangeText = {formikProps.handleChange('phone')}
-            onBlur = {formikProps.handleBlur('phone')}
+            value={formikProps.values.phoneNumber}
+            formikKey = 'phoneNumber'
+            onChangeText = {formikProps.handleChange('phoneNumber')}
+            onBlur = {formikProps.handleBlur('phoneNumber')}
             />
             <Text style = {styles.txtError}>
-              {formikProps.touched['phone'] && formikProps.errors['phone']} 
+              {formikProps.touched['phoneNumber'] && formikProps.errors['phoneNumber']} 
             </Text>
-            <Text style={styles.labelAddress}>Address: </Text>
+            <Text style={styles.labelAddress}>Địa chỉ: </Text>
 
             <Textarea
                 style={styles.textarea}
@@ -138,7 +146,7 @@ export const Information = ({route, navigation}) => {
 
             <Button 
               style={styles.buttonSave}
-              onPress={ ()=> ChangeInfo(formikProps.values, navigation, chanInfo)}>
+              onPress={ ()=> ChangeInfo(id, token, formikProps.values, navigation, chanInfo)}>
               <Text button style={styles.txtSave}> Lưu thông tin</Text>
             </Button>
           </Block>
@@ -170,15 +178,18 @@ const styles = StyleSheet.create({
   labelName:{
     marginLeft: 50,
     marginTop: 20, 
-    fontSize: 15
+    fontSize: 15,
+    color: 'black'
   },
   labelPhone: {
     marginLeft: 50,
     marginTop: 15,
     color: 'black'
   },
-  labelAddress:{marginLeft: 50,
-    marginTop: 15
+  labelAddress:{
+    marginLeft: 50,
+    marginTop: 15,
+    color: 'black'
   },
   btnSave:{ 
     marginBottom: 20 , 
@@ -215,8 +226,11 @@ const styles = StyleSheet.create({
     backgroundColor: 'yellow',
   },
   avatar: {
+    width: 100,
+    height:100,
+
     marginTop: -40,
-    borderRadius: 60,
+    borderRadius: 100,
     marginBottom: 16,
     borderColor: 'white',
     borderWidth: StyleSheet.hairlineWidth,
