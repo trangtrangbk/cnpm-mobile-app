@@ -1,6 +1,7 @@
 
-const changeInfo = (id, token, name, address, phoneNumber) =>(
-    fetch(`https://myfroom.herokuapp.com/api/userinfo/${id}`, 
+const changeInfo = (token, name, address, phoneNumber, avatar) =>(
+    console.log(token, name, address, phoneNumber, avatar),
+    fetch(`https://myfroom.herokuapp.com/api/userinfo`, 
     {
         method: 'PUT',
         headers: {
@@ -8,7 +9,7 @@ const changeInfo = (id, token, name, address, phoneNumber) =>(
             Accept: 'application/json',
             "Authorization": token,
         },
-        body: JSON.stringify({ name, address, phoneNumber })
+        body: JSON.stringify({ name, address, phoneNumber, avatar})
     })
     .then(res => res.json())
     .catch((error)=>{

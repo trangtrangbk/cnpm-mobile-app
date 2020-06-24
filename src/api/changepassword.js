@@ -1,6 +1,6 @@
 
 const changePassword = (token, password, newPass) =>(
-    fetch(`https://myfroom.herokuapp.com/api/accounts/`, 
+    fetch(`https://myfroom.herokuapp.com/api/accounts/changePassword`, 
     {
         method: 'PATCH',
         headers: {

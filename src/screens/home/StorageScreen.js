@@ -2,12 +2,12 @@ import React, {useEffect } from 'react';
 import { View, StyleSheet, Text, Dimensions, FlatList } from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
-import { Item } from '../../../components/Item';
-import getNewsInStorage from '../../../api/getNewsInStorage';
+import { Item } from '../../components/Item';
+import getNewsInStorage from '../../api/getNewsInStorage';
 
 var { width, height } = Dimensions.get('window');
 
-export const SaveScreen = ({navigation}) => {
+export const StorageScreen = ({navigation}) => {
   const [data, setData] = React.useState([])
   useEffect(() => {
     getNewsInStorage()

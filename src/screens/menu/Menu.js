@@ -7,9 +7,8 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { Button } from 'expo-ui-kit';
 
 import Route from '../../constants/Route';
-
-import { Dashboard } from '../dashboard/DashBoard'
-import { Information } from './information/Information';
+import { Home } from '../home/Home'
+import { InfoScreen }  from './information/Information';
 
 import { ChangePassword } from '../menu/changePassword/ChangePassword';
 import { LoginScreen }from '../menu/auth/login/LoginScreen';
@@ -36,16 +35,15 @@ export const MenuScreens = ({ navigation, style }) => {
               </Button>
             ),
           }}>
-          <Stack.Screen name = { Route.DASHBOARD }
+          <Stack.Screen name = { Route.HOME }
 
           options ={{
             headerTransparent: true,
             headerLeft:  null,
             title: null,
-          }}
-          
-          >{props => <Dashboard {...props} />}</Stack.Screen>
-          <Stack.Screen name = { Route.INFO }>{props => <Information {...props} />}</Stack.Screen>
+          }}>{props => <Home {...props} />}</Stack.Screen>
+
+          <Stack.Screen name = { Route.INFORMATION }>{props => <InfoScreen {...props} />}</Stack.Screen>
           <Stack.Screen name = { Route.CHANGE_PASSWORD }>{props => <ChangePassword {...props} />}</Stack.Screen>
           <Stack.Screen name = { Route.HISTORY }
           options ={{
@@ -60,7 +58,7 @@ export const MenuScreens = ({ navigation, style }) => {
           options ={{
             headerTransparent: true,
               headerLeft: () => (
-                <Button transparent onPress={() => navigation.navigate(Route.DASHBOARD)}>
+                <Button transparent onPress={() => navigation.navigate(Route.HOMEPAGE)}>
                   <Image source = { icLeft } style={{width: 20, height: 20, marginLeft: 15}}/>
                 </Button>
               ),

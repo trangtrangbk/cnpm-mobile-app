@@ -1,6 +1,7 @@
-import React, { Component } from 'react';
-import { Image,StyleSheet, View, Dimensions , Linking, ViewComponent} from 'react-native';
+import React from 'react';
+import { Image,StyleSheet, View, Dimensions , Linking, TouchableOpacity} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
+import Lightbox from 'react-native-lightbox';
 import Swiper from 'react-native-swiper'
 
 import moment from 'moment';
@@ -11,29 +12,35 @@ var { width,height } = Dimensions.get('window');
 
 
 import {Button, Text, Block, Divider} from '../../components';
-import saveNew from '../../api/saveNew';
-import getNewsInStorage from '../../api/getNewsInStorage';
+
+import Route from '../../constants/Route';
+import getNewsInStorage from '../../storage/getNewsInStorage';
+
 import icEnergy from '../../assets/icons/energy.png';
 import icMap1 from '../../assets/icons/ic_map.png';
 import icCall1 from '../../assets/icons/ic_outgoing-call-detail.png';
 import icCalendar from '../../assets/icons/ic_calendar-detail.png';
 import icCall from '../../assets/icons/phone.png';
-import icLocation from '../../assets/icons/location.png'
+import icHeart from '../../assets/icons/love.png';
+import icHeartBr from '../../assets/icons/h.png';
+import icAvatar from '../../assets/icons/avatar.png';
+import icNext from '../../assets/icons/next.png'
 
 export const DetailScreen = ({navigation , route})=>{
-  const [save, setSave] = React.useState(false);// data: list
+  const [save, setSave] = React.useState(false);
   const [isShowText, setShowText] = React.useState(true);
 
+
   React.useEffect(() => {
-    
-     getNewsInStorage()
+    getNewsInStorage()
       .then(result => {
+        console.log(result)
         if(result.find(item => item._id === route.params.item._id)) setSave(true);
       })
 
-      let myVar = setInterval(async ()=>{
-        await setShowText(isShowText =>  !isShowText)
-      }, 500);
+    let myVar = setInterval(async ()=>{
+      await setShowText(isShowText =>  !isShowText)
+    }, 500);
     return () => {
         clearInterval(myVar);
     };
@@ -132,49 +139,78 @@ export const DetailScreen = ({navigation , route})=>{
         </View>
       </View>);
   }
-  const _showBottomTab = () => {
+
+  const _showInfo5 = () => {
+    const { name , avatar} =route.params.item.user;
+    console.log(avatar, '______________________')
     return(
-      <View style = {styles.below}>
-        <View style = {styles.box1}>
-          <Button style = {styles.button_below} onPress={()=>makeCall()} >
-            <Image source={icCall} style={ styles.icon }/>
-            <Text button style = {[styles.button_text, styles.fontSize]}>Gọi</Text>
-          </Button>
-        </View>
-        <View style = {styles.box1}>
-        { !save ?<Button 
-          style = {[styles.button_below, {backgroundColor: '#4D64F0'}]}
-          onPress={() =>handleSave()}>
-            <Text button style = {styles.fontSize}>Lưu tin</Text>
-          </Button>
-          :
-          <Button 
-          style = {[styles.button_below, {backgroundColor: '#4D64F0'}]}
-          onPress={() =>handleUnSave()}>
-            <Text button style = {styles.fontSize}>Đã lưu</Text>
-          </Button>}
-        </View>
-        <View style = {styles.box1}>
-          <Button style = {styles.button_below} >
-            <Text button style = {[styles.button_text, styles.fontSize, {marginLeft: 0}]}>Vị trí</Text>
-            <Image source={icLocation} style={ [styles.icon, {marginLeft: 5} ]}/>
-          </Button>
-        </View>
+      <View style = {styles.info5 } >
+        <Image 
+        source={!avatar?icAvatar:{uri: avatar}}
+        style={styles.avatar}/>
+        <Text style={styles.titleName}> {name}</Text>
       </View>);
   }
-  const _showImage = () =>{
 
+  const _showImage = () =>{
+    const {picture} = route.params.item;
     return(
-        <Swiper style= {{height: 250}} showsButtons={true}>
-          {route.params.item.picture.map(item =>{
-            return (
-              <Image
-              style = {styles.img}
-              source={{
-                uri: item,
-            }}/> 
-            )})}
-        </Swiper>
+      <Swiper style= {{height: 250}} showsButtons={true}>
+      {route.params.item.picture.map(item =>{
+        return (
+          <Lightbox>
+            <Image
+            style = {styles.img}
+            source={{
+              uri: item,
+          }}/> 
+          </Lightbox>
+        )})}
+    </Swiper>
+    )
+  }
+  const _showIconBottomSave  = () =>{ 
+    return (
+      <TouchableOpacity
+        onPress={() =>!save ? handleSave() : handleUnSave()}
+        style={styles.downButtonSave}>
+        <Image
+          source={!save? icHeart: icHeartBr}
+          style={styles.icon}
+        />
+        <Text style={styles.titleSave}>{!save? 'Lưu tin': 'Đã lưu'}</Text>
+      </TouchableOpacity>
+    )
+  }
+
+  const _showIconBottomCall  = () =>{ 
+    return (
+      <TouchableOpacity
+        onPress={() => makeCall()}
+        style={styles.downButtonCall}>
+        <Image
+          source={icCall}
+          style={styles.downButtonImage}
+        />
+        <Text></Text>
+      </TouchableOpacity>
+    )
+  }
+
+  const _showListCommnet = () =>{
+
+
+  }
+  const _showComment = () => {
+    const {_id, title} = route.params.item;
+    return (
+      <View style = {[styles.info3]} >
+        <Button style={{backgroundColor: 'white', flexDirection: 'row'}} onPress = {() => navigation.push(Route.COMMENT, {id: _id,name: title})}>
+          <Text style={styles.txtCmt}>Bình luận</Text>
+          <Image source = {icNext} style = {styles.btnNext}/>
+        </Button>
+      </View>
+
     )
   }
   const _showMain = () =>{
@@ -184,6 +220,8 @@ export const DetailScreen = ({navigation , route})=>{
       { _showInfo2() }
       { _showInfo3() }
       { _showInfo4() }
+      {_showComment()}
+      { _showInfo5() }
     </View>);
   }
   return (
@@ -193,12 +231,59 @@ export const DetailScreen = ({navigation , route})=>{
           {_showImage()}
         </View>
         { _showMain() }
+
       </KeyboardAwareScrollView>
       <View style =  {styles.divider} />
-        { _showBottomTab() }
+        { _showIconBottomCall() }
+        { _showIconBottomSave() }
     </View>);
 }
 const styles = StyleSheet.create({
+  txtCmt: { marginBottom: 4, marginLeft : 15, marginTop: 4, fontSize: 21, width: width -80 },
+  btnNext: {
+    height: 20,
+    width: 20,
+  },
+  titleName: {
+    marginTop: 10,
+    marginLeft: 15
+  },  
+  titleSave :{
+    fontSize: 13,
+  },
+  downButtonCall: {
+    opacity: 0.5,
+    borderRadius: 50,
+    backgroundColor:'#ff9966',
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: 10,
+    top: 2*height/3,
+    right: 15,
+  },
+
+  downButtonSave: {
+    opacity: 0.5,
+    borderRadius: 50,
+    backgroundColor:'#5cd65c',
+    position: 'absolute',
+    width: 60,
+    height: 60,
+    alignItems: 'center',
+    justifyContent: 'center',
+    right: 10,
+    top: 2*height/3+70,
+    right: 15,
+  },
+  downButtonImage: {
+    resizeMode: 'contain',
+    marginTop: 20,
+    width: 30,
+    height: 30,
+  },
   main: {
     height: height - height/10,
   },
@@ -229,6 +314,15 @@ const styles = StyleSheet.create({
   button_text: {
     marginLeft : 10, 
     color: '#C6D1D1'
+  },
+  avatar: {
+    marginLeft: 20,
+    height: 60,
+    width:60,
+    borderRadius: 100,
+    marginBottom: 16,
+    borderColor: 'white',
+    borderWidth: StyleSheet.hairlineWidth,
   },
   info: {
     flexDirection: 'column',
@@ -261,6 +355,13 @@ const styles = StyleSheet.create({
     width: width-25 , 
     marginTop: 10
   }, 
+  info5: {
+    flexDirection: 'row',
+    backgroundColor: 'white',
+    borderRadius: 10 , 
+    width: width-25 , 
+    marginTop: 10
+  },
   divider:{
     width: width, 
     height: 1 , 

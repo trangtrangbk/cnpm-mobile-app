@@ -1,8 +1,7 @@
-const getNewsFilter = async (page, bodyData) =>(
-    await fetch(`https://myfroom.herokuapp.com/api/news?page=${page}&pageSize=4`,
+const getNewsFilter = async (page, params) =>(
+    await fetch(`https://myfroom.herokuapp.com/api/news?page=${page}&pageSize=4&${params}`,
     {
         method: 'GET',
-        body:JSON.stringify({'city': 'Hà nội'}),
     })
     .then(res => res.json())
     .catch((error)=>{

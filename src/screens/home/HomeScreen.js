@@ -3,41 +3,42 @@ import { View, StyleSheet, Text, TouchableOpacity, Image, Dimensions, FlatList, 
 import Spinner from 'react-native-loading-spinner-overlay';
 
 
-import icMenu from '../../../assets/icons/bars.png';
-import icHeart from '../../../assets/icons/h.png'
-import icAddNew from '../../../assets/icons/add_news.png'
-import icFilter from '../../../assets/icons/filter.png'
-import icLocationFilter from '../../../assets/icons/location2.png'
-import icDown from '../../../assets/icons/down-arrow.png'
-import icArea from '../../../assets/icons/area.png'
-import icPrice from '../../../assets/icons/price.png'
+import icMenu from '../../assets/icons/bars.png';
+import icHeart from '../../assets/icons/h.png'
+import icAddNew from '../../assets/icons/add_news.png'
+import icFilter from '../../assets/icons/filter.png'
+import icLocationFilter from '../../assets/icons/location2.png'
+import icDown from '../../assets/icons/down-arrow.png'
+import icArea from '../../assets/icons/area.png'
+import icPrice from '../../assets/icons/price.png'
 
-import { Item }from '../../../components/Item';
-import getNews from '../../../api/getNews';
-import getNewsFilter from '../../../api/getNewsFilter';
-import Route from '../../../constants/Route';
+import { Item }from '../../components/Item';
+import getNews from '../../api/getNews';
+import getNewsFilter from '../../api/getNewsFilter';
+import Route from '../../constants/Route';
+import Button from '../../components/Button'
 var { width,height } = Dimensions.get('window');
 
 export const HomeScreen = ({navigation}) => {
  
-  const [listNews, setListNews] = React.useState([]);
-  const [page, setPage] = React.useState(1);
-  const [refreshing, setRefresh] = React.useState(false);
-  const [isLoading, setLoading] = React.useState(true);
-  const [isShowFilter, setShowFilter] = React.useState(false);
+  const [ listNews, setListNews ] = React.useState([]);
+  const [ page, setPage ] = React.useState(1);
+  const [ refreshing, setRefresh ] = React.useState(false);
+  const [ isLoading, setLoading ] = React.useState(true);
+  const [ isShowFilter, setShowFilter ] = React.useState(false);
 
-  const [city, setCity] = React.useState({code: -1, name: ''});
-  const [district, setDistrict] = React.useState({code: -1, name:''});
-  const [ward, setWard] = React.useState({code: -1, name:''});
-  const [price, setPrice] = React.useState({code: -1, title: ''});
-  const [area, setArea] = React.useState({code: -1, title: ''});
+  const [ city, setCity ] = React.useState({code: -1, name: ''});
+  const [ district, setDistrict ] = React.useState({code: -1, name:''});
+  const [ ward, setWard ] = React.useState({code: -1, name:''});
+  const [ price, setPrice ] = React.useState({code: -1, title: ''});
+  const [ area, setArea ] = React.useState({code: -1, title: ''});
 
-  const [data, setData] = React.useState(null);
+  const [ params, setParam ] = React.useState(`city=&district=&ward=&price=&area=`);
 
 
   useEffect(() => {
     setShowFilter(true)
-    getNews(1)
+    getNewsFilter(1, params)
       .then(res => {
         setListNews(res.data);
         setLoading(()=>false)
@@ -47,20 +48,22 @@ export const HomeScreen = ({navigation}) => {
       console.log("HOME____________________Component-Will-Un-mount");
     };
   }, []);
-
   const _handleLoadDataFilter = ({city}, {district}, {ward}, {price}, {area}) =>{
-    console.log('HomeScreen')
-    const bodyData = {city, district, ward, price,area}
-    console.log(bodyData)
-    setData(bodyData);
-    getNewsFilter(1, bodyData)
+    setShowFilter(true)
+    setRefresh(true)
+    setPage(1)
+    setListNews([])
+    let str = `city=${city}&district=${district}&ward=${ward}&price=${price}&area=${area}`;
+    setParam(str);
+    getNewsFilter(1, str)
       .then(res => {
-        console.log(res)
+        setListNews(res.data);
+        setRefresh(false)
       })
   }
 
   const handleLoadMore = () =>{
-    getNews(page+1)
+    getNewsFilter(page+1, params)
       .then(res =>{
         setPage(page+1),
         setListNews([...listNews,...res.data])
@@ -71,7 +74,7 @@ export const HomeScreen = ({navigation}) => {
     setRefresh(true)
     setPage(1)
     setListNews([])
-    getNews(1)
+    getNewsFilter(1, params)
       .then(res => {
         setListNews(res.data);
         setRefresh(false)
@@ -87,29 +90,29 @@ export const HomeScreen = ({navigation}) => {
   const _showTopToolbar = () =>{
     return <View style={styles.TopToolbar}>
         <TouchableOpacity
-          style={{width: width/12}}
+          style={{width: width/6}}
           onPress={() => navigation.openDrawer()}>
           <View  style={{marginLeft: 10}} >
-            <Image 
+            <Image
               source= {icMenu}
-              style={{width: 25, height: 25, marginTop: 15}}/>
+              style={{width: 25, height: 25, marginTop: 10}}/>
           </View>
         </TouchableOpacity>
 
-        <Text style={[styles.title, {width: 7*width/12}]}>Trang chủ</Text>
+        <Text style={[styles.title, {width: 7*width/15, color: 'black'}]}>Trang chủ</Text>
 
         <TouchableOpacity
-          style={{width: width/12}}
-          onPress={() => navigation.navigate(Route.SAVE)}>
+          style={{width: width/12, width: 60}}
+          onPress={() => navigation.navigate(Route.STORAGE)}>
           <View  style={{marginLeft: 10}} >
             <Image 
               source= {icHeart}
-              style={{width: 25, height: 25, marginTop: 15}}/>
+              style={{width: 25, height: 25, marginTop: 10}}/>
           </View>
         </TouchableOpacity>
 
         <TouchableOpacity
-         style={{width: width/12, marginLeft: 20}}
+         style={{width: width/12, width: 70}}
           onPress={() => navigation.navigate(Route.POST)}>
           <View  style={{marginLeft: 10}} >
             <Image 
@@ -281,15 +284,16 @@ export const HomeScreen = ({navigation}) => {
         refreshing={refreshing}
         onEndReached = { handleLoadMore }
         onScroll ={(e) =>setShowFilter(false)}
-        onEndThreshold = { 0 }/>
-        <TouchableOpacity
-          onPress={_filterButtonHandler}
-          style={styles.downButton}>
-          <Image
-            source={icFilter}
-            style={styles.downButtonImage}
-          />
-        </TouchableOpacity>
+        onEndThreshold = { 0 }
+        />
+      <TouchableOpacity
+        onPress={_filterButtonHandler}
+        style={styles.downButton}>
+        <Image
+          source={icFilter}
+          style={styles.downButtonImage}
+        />
+      </TouchableOpacity>
     </View>
   );
 };

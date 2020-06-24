@@ -1,18 +1,18 @@
 export default {
     AUTH: 'Auth',
-    DASHBOARD: 'Dashboard',
+    HOME: 'HOME',
 
+    HOMEPAGE: 'HOME_PAGE',
     LOGIN: 'Login',
     LOGUP: 'LogUp',
     CHANGE_PASSWORD: 'Change Password',
-    INFO: 'Information',
+    INFORMATION: 'Information',
     HISTORY: 'History',
     
-    HOME: 'Home',
-    SAVE: 'Save',
+    STORAGE: 'Storage',
     POST: 'Post',
     SEARCH: 'Search',
-    MAP: 'Map',
+    COMMENT: 'Comment',
     DETAIL: 'Detail',
     FILTER: 'Filter'
   }

@@ -34,7 +34,7 @@ export const LoginScreen = ({ navigation }) => {
           signIn();
           setLoading(false)
           onSuccess();
-          navigation.navigate(Route.DASHBOARD) 
+          navigation.navigate(Route.HOMEPAGE) 
         }
         else {
           setLoading(false)
@@ -92,15 +92,6 @@ export const LoginScreen = ({ navigation }) => {
                     password
                     label="Password"
                     style={{ marginBottom: 25 }}
-                    // rightLabel={
-                    //   <Text
-                    //     paragraph
-                    //     color="gray"
-                    //     onPress={() => navigation.navigate('Forgot')}
-                    //   >
-                    //     Forgot password?
-                    //   </Text>
-                    // }
                     formikProps = {formikProps}
                     formikKey = 'password'
                   />

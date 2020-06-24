@@ -17,8 +17,7 @@ import icEnergy from '../../../assets/icons/energy.png';
 import icMap1 from '../../../assets/icons/ic_map.png';
 import icCall1 from '../../../assets/icons/ic_outgoing-call-detail.png';
 import icCalendar from '../../../assets/icons/ic_calendar-detail.png';
-import icCall from '../../../assets/icons/phone.png';
-import icLocation from '../../../assets/icons/location.png'
+
 
 export const HistoryDetail = ({navigation , route})=>{
   const [save, setSave] = React.useState(false);// data: list

@@ -3,8 +3,6 @@ import Animated, { set } from 'react-native-reanimated';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StyleSheet } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
-
-
 import { DrawerMenuHasToken, DrawerMenuHasNotToken } from '../screens/menu/MenuView';
 import { MenuScreens } from '../screens/menu/Menu';
 
@@ -74,13 +72,15 @@ export default () => {
       chanInfo: async () =>{
         getToken()
           .then(tk => {
-            console.log(token)
             checkLogin(tk)
               .then(res => {
-                console.log(res.resultUser, '-------------')
-                getUser()
-                  .then(u=> setUser({name: u.name, email: res.resultUser.email, phoneNumber: u.phoneNumber, address: u.address}))
-
+                if(res.msg) {
+                  console.log(res)
+                  setUser(res.resultUser)
+                }else {
+                  saveToken('')
+                  setToken('');
+                }
               })
             .catch(err=> {
               saveToken('')

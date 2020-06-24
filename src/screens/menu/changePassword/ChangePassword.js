@@ -47,7 +47,7 @@ export const ChangePassword = ({ navigation }) =>{
       'Notice',
       'Change password on Successfully',
       [
-        { text:'OK', onPress: () => navigation.navigate(Route.DASHBOARD) }
+        { text:'OK', onPress: () => navigation.navigate(Route.HOMEPAGE) }
       ],
       {cancelable: false}
     )

@@ -3,23 +3,22 @@ import { View ,StyleSheet, TouchableOpacity, SafeAreaView, Image, Dimensions, Te
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import Spinner from 'react-native-loading-spinner-overlay';
 import RNPickerSelect from 'react-native-picker-select';
-import ImagePicker from 'react-native-image-crop-picker'; //
-import ActionSheet from 'react-native-actionsheet';//
+import ImagePicker from 'react-native-image-crop-picker'; 
+import ActionSheet from 'react-native-actionsheet';
 import NumberFormat from 'react-number-format';
 import Textarea from 'react-native-textarea';
 import { Formik } from 'formik';
 import * as yup from 'yup';
 
-import {Button,Text } from '../../../components/index'
-import icMenu from '../../../assets/icons/bars.png';
-import Route from '../../../constants/Route';
-import getToken from '../../../api/getToken';
-import geCities from '../../../api/apiPlaces/getCities'
-import getDistrict from '../../../api/apiPlaces/getDistrict';
-import getWard from '../../../api/apiPlaces/getWards';
-import getAddress from '../../../api/apiPlaces/getAddress';
-import postPicture from '../../../api/postPicture'; 
-import postNew from '../../../api/postNew';
+import {Button,Text } from '../../components/index'
+import Route from '../../constants/Route';
+import getToken from '../../api/getToken';
+import getDistrict from '../../api/apiPlaces/getDistrict';
+import geCities from '../../api/apiPlaces/getCities'
+import getAddress from '../..//api/apiPlaces/getAddress';
+import getWard from '../../api/apiPlaces/getWards';
+import postPicture from '../../api/postPicture'; 
+import postNew from '../../api/postNew';
 var { width, height } = Dimensions.get('window');
 
 export default class PostScreen extends React.Component {
@@ -91,7 +90,7 @@ export default class PostScreen extends React.Component {
             "Thông báo",
             "Đăng bài viết thành công vui lòng chờ phê duyệt.",
             [
-              { text: "OK", onPress: () => navigation.navigate(Route.HOME) }
+              { text: "OK", onPress: () => navigation.navigate(Route.HOMEPAGE) }
             ],
             { cancelable: false }
         );
@@ -207,7 +206,7 @@ export default class PostScreen extends React.Component {
                     });
                 });
                 }).catch(error => {
-                alert(JSON.stringify(error));
+                console.log(JSON.stringify(error));
                 });
                 break;
             default:
@@ -217,6 +216,7 @@ export default class PostScreen extends React.Component {
     
     renderListPhotos = localPhotos => {
         const photos = localPhotos.map((photo, index) => (
+            console.log(photo.path),
             <TouchableOpacity key={index}
                 onPress={() => {
                 this.showActionSheet(index);
@@ -270,7 +270,9 @@ export default class PostScreen extends React.Component {
             .label('apartment_number')
             .required('Vui lòng nhập số nhà'),
       })
+      
     render() {
+
     const { navigation } = this.props;
     const {isLogin, cities, districts, wards} = this.state;
 

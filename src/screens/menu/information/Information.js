@@ -1,7 +1,8 @@
 import React ,{useEffect} from 'react';
-import { View, StyleSheet, Text, Image ,Dimensions, TextInput, Alert} from 'react-native';
+import { View, StyleSheet, Text, Image ,Dimensions, TextInput, Alert, TouchableOpacity} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import Spinner from 'react-native-loading-spinner-overlay';
+import ImagePicker from 'react-native-image-picker';
 import Textarea from 'react-native-textarea';
 import { Formik } from 'formik'
 import * as yup from 'yup'
@@ -10,22 +11,25 @@ var { width,height } = Dimensions.get('window');
 import { Button, Block } from '../../../components';
 import Route from '../../../constants/Route';
 import icAvatar from '../../../assets/icons/avatar.png'
+import icCamera from '../../../assets/icons/camera.png'
 
+import postPicture from '../../../api/postPicture';
 import { AuthContext } from '../../../contexts/AuthContext' 
 import  changeInfo  from '../../../api/changeinfo';
 import getToken from '../../../storage/getToken';
-import getID from '../../../storage/getID';
-import saveUser from '../../../storage/saveUser'
-import saveNew from '../../../api/saveNew';
+import saveToken from '../../../storage/saveToken';
 
-export const Information = ({route, navigation}) => {
+export const InfoScreen = ({route, navigation}) => {
   const {chanInfo } = React.useContext(AuthContext);
-  const [id, setId] = React.useState('');
+  const [localPhoto, setLocalPhoto] = React.useState(null);
   const [token, setToken] = React.useState('');
   const [loading, setLoading] = React.useState(false);
+  const [uploading, setUploading] = React.useState(true);
+  const [avatar , setAvatar] = React.useState('');
+
 
   useEffect(() => {
-    getID().then(ID => setId(ID))
+    console.log(localPhoto)
     getToken().then(token => setToken(token))
   }, []);
 
@@ -36,27 +40,25 @@ export const Information = ({route, navigation}) => {
     phoneNumber: yup.string().matches(phoneRegExp, 'Phone number is not valid'),
   })
   
-  const ChangeInfo = async (id, token, values, navigation, chanInfo) =>{
-    setLoading(true)
-    saveUser(null)
-    changeInfo( id ,token, values.name,  values.address, values.phoneNumber)
-        .then(res => {
-          saveUser({name:values.name, address:values.address, phoneNumber: values.phoneNumber })
-            chanInfo();
+  const _toDo = async (token, values, navigation, chanInfo, avatar) =>{
+    changeInfo(token, values.name, values.address, values.phoneNumber, avatar)
+      .then(res => {
+        saveToken(res.userInfo.token)
+        chanInfo();
+            onSuccess(navigation)
             setLoading(false)
-            onSuccess(navigation)})
-        .catch(error=> {
-          setLoading(false)
-          onFail();
-        })
+          })
+          .catch(error=> {
+            setLoading(false)
+            onFail();
+          })
   }
-  
   const onSuccess = (navigation) =>{
     Alert.alert(
       'Notice',
       'ChangeInfo on Successfully',
       [
-        { text:'OK', onPress: () => navigation.navigate(Route.DASHBOARD) }
+        { text:'OK', onPress: () => navigation.navigate(Route.HOMEPAGE) }
       ],
       {cancelable: false}
     )
@@ -70,7 +72,48 @@ export const Information = ({route, navigation}) => {
       ],
     )
   }
+  const selectPhotoTapped = () => {
+    const options = {
+      title: 'Select Photo',
+      storageOptions: {
+        skipBackup: true,
+        path: 'images',
+      },
+    };
+    ImagePicker.showImagePicker(options, (response) => {
+      console.log(response.path)
+      if (response.didCancel) {
+        console.log('User cancelled image picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else {
+        const file = {
+          uri: 'file://'+response.path,
+          name: response.filename || Math.floor(Math.random() * Math.floor(999999999)) + '.jpg',
+          type: response.mime || 'image/jpeg'
+        };
+        setLocalPhoto(file);
+      }
+    });
+  }
 
+  const _onChangeInfo = ( token, values, navigation, chanInfo ) => {
+    setLoading(true)
+    if(localPhoto){
+      let formData = new FormData();
+      formData.append('photo', localPhoto);
+      postPicture(formData)
+        .then(res => {
+          console.log(res)
+            if(res.message === 'success!') {
+              _toDo( token, values, navigation, chanInfo , res.picture[0])
+            }
+            else console.log('')
+        })
+    }else {
+      _toDo( token, values, navigation, chanInfo , '')    
+  }
+}
   const _showLoading = () =>{
     if(loading) 
       return <Spinner visible={loading}  textStyle={{color: '#FFF'}}/>
@@ -86,17 +129,22 @@ export const Information = ({route, navigation}) => {
           /> 
         </View>
         <View style={styles.icon}>
-        <Image source={icAvatar} style = {styles.avatar}/>
+          <Image source={ localPhoto!==null ? {uri: localPhoto.uri}: route.params.user?{uri: route.params.user.avatar} :icAvatar} style = {styles.avatar}/>
+           <TouchableOpacity style={{backgroundColor: '#DEE1E6',  width: 100, height: 50, borderBottomRightRadius:100, borderBottomLeftRadius: 100, opacity: 0.5, marginLeft: width/27, marginTop: -height/10+4}}
+           onPress={()=>selectPhotoTapped()}
+           >
+             <Image
+               source={icCamera}
+              style = {{height: 30, width: 30, marginLeft: 35, marginTop: 10}} 
+             />
+           </TouchableOpacity>
           <Text style={styles.txtName}>{route.params.user.name}</Text>
-        <Text style={styles.txtEmail}>{route.params.user.email}</Text>
+          <Text style={styles.txtEmail}>{route.params.user.email}</Text>
         </View>
         <View style={ styles.content}> 
-
-
         <Formik
         initialValues = {route.params.user}
         validationSchema = {validationSchema}>
-
         {formikProps => (
           <Block>
             <Text style={styles.labelName}>Họ tên:</Text>
@@ -146,14 +194,13 @@ export const Information = ({route, navigation}) => {
 
             <Button 
               style={styles.buttonSave}
-              onPress={ ()=> ChangeInfo(id, token, formikProps.values, navigation, chanInfo)}>
+              onPress={ ()=> _onChangeInfo(token, formikProps.values, navigation, chanInfo)}>
               <Text button style={styles.txtSave}> Lưu thông tin</Text>
             </Button>
           </Block>
         )}
         </Formik>
         </View>
-        
       </KeyboardAwareScrollView>
     </View>
   );
@@ -237,7 +284,6 @@ const styles = StyleSheet.create({
     marginLeft: 15,
   },
   txtName: {
-    marginTop: -10,
     color: '#717C81',
     fontSize: 18
   },

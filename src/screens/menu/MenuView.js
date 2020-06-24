@@ -18,13 +18,15 @@ import icHome from '../../assets/icons/ic_home-mn.png'
 import icAvatar from '../../assets/icons/avatar.png'
 
 export const DrawerMenuHasToken = (props) => {
+  console.log(props.user.avatar, 'user')
+
   const { signOut } = React.useContext(AuthContext);
   return (
     <DrawerContentScrollView {...props} scrollEnabled={false} contentContainerStyle={{ flex: 1 }}>
       <Block>
         <Block flex={0.4} margin={20} bottom style={{alignItems: 'center', marginLeft: -20}}>
-          <TouchableOpacity onPress = {() => {props.navigation.navigate(Route.INFO, { user: props.user })}}>
-            <Image source={icAvatar} style={styles.avatar}  /> 
+          <TouchableOpacity onPress = {() => {props.navigation.navigate(Route.INFORMATION, { user: props.user })}}>
+            <Image source={!props.user.avatar?icAvatar:{uri: props.user.avatar}} style={styles.avatar}  /> 
           </TouchableOpacity>
           <Text white title>{props.user.name.toUpperCase()}</Text>
           <Text white size={9}>{props.user.email}</Text>
@@ -34,7 +36,7 @@ export const DrawerMenuHasToken = (props) => {
             label="Trang Chủ"
             labelStyle={{ color: 'white', marginLeft: -16 }}
             style={{ alignItems: 'flex-start', marginVertical: 0 }}
-            onPress={() => props.navigation.navigate(Route.DASHBOARD)}
+            onPress={() => props.navigation.navigate(Route.HOMEPAGE)}
             icon={() => <Image source={icHome } style={styles.icon} />}
           />  
           <DrawerItem
@@ -49,7 +51,7 @@ export const DrawerMenuHasToken = (props) => {
             label="Thông tin cá nhân"
             labelStyle={{ color: 'white', marginLeft: -16 }}
             style={{ alignItems: 'flex-start', marginVertical: 0 }}
-            onPress={() => {props.navigation.navigate(Route.INFO, { user: props.user })}}
+            onPress={() => {props.navigation.navigate(Route.INFORMATION, { user: props.user })}}
             icon={() => <Image source={icChangInfo } style={styles.icon} />}
           />
           <DrawerItem
@@ -66,7 +68,7 @@ export const DrawerMenuHasToken = (props) => {
           icon={() =><Image source={icLogout } style={styles.icon} />}
           onPress={() => {
             signOut()
-            props.navigation.navigate(Route.DASHBOARD)
+            props.navigation.navigate(Route.HOMEPAGE)
           } }
         />
         </Block>
