@@ -14,5 +14,10 @@ export default {
     SEARCH: 'Search',
     COMMENT: 'Comment',
     DETAIL: 'Detail',
-    FILTER: 'Filter'
+    FILTER: 'Filter',
+
+    HISTORY_CHANGE:'History Change',
+    HISTORY_DETAIL:'History Detail',
+    HISTORY:'History',
+    
   }

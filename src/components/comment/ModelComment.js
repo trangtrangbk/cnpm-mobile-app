@@ -17,11 +17,22 @@ import * as yup from 'yup'
 let viLocale = require('moment/locale/vi');
 moment.locale('vi',viLocale)
 var { width, height } = Dimensions.get('window');
-import Button from '../../components/Button'
+import Button from '../../components/Button';
+import getUser from '../../storage/getUser';
 import icCancel from '../../assets/icons/wrong.png';
+import { set } from 'react-native-reanimated';
 
 
 export const ModelComment  = ({showForm, name, setShowForm, PostComment}) => {
+  const [ isLogin , setIsLogin ] = React.useState(false);
+  React.useEffect(() => {
+    getUser().then(user => {
+      if(user) setIsLogin(true);
+    })
+    return () => {
+      console.log("Filters____________________Component-Will-Un-mount");
+    };
+  }, []); 
     const validationSchema = yup.object().shape({
       name: yup.string().label('name').required('vui lòng nhập tên!'),
       comment: yup.string().label('comment').required('Vui lòng nhập nội dung'),
@@ -54,6 +65,8 @@ export const ModelComment  = ({showForm, name, setShowForm, PostComment}) => {
                     <View style={{borderRadius: 10, borderColor: '#DEE1E6', borderWidth: 1,width: width -60, backgroundColor: 'white'}} >
                       <TextInput
                         style={{marginLeft: 10, height: 40}}
+                       
+                        editable={isLogin? false: true}
                         formikProps = {formikProps}
                         label='name'
                         placeholder={'Nhập tên(bắt buộc)'}

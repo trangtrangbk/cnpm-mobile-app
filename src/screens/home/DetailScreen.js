@@ -1,40 +1,37 @@
 import React from 'react';
-import { Image,StyleSheet, View, Dimensions , Linking, TouchableOpacity} from 'react-native';
+import { 
+  Image,
+  StyleSheet, 
+  View, 
+  Dimensions , 
+  Linking, 
+} from 'react-native';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import Lightbox from 'react-native-lightbox';
-import Swiper from 'react-native-swiper'
 
-import moment from 'moment';
-
-let viLocale = require('moment/locale/vi');
-moment.locale('vi',viLocale)
 var { width,height } = Dimensions.get('window');
+import { Button, Text } from '../../components';
 
-
-import {Button, Text, Block, Divider} from '../../components';
+import {
+  ContentImage, 
+  ContentTitle, 
+  ContentAddress, 
+  ContentCreateDate, 
+  ContentDescription, 
+  ContentAvatar, 
+  ButtonSave, 
+  ButtonCall} from '../../components/detail'
 
 import Route from '../../constants/Route';
 import getNewsInStorage from '../../storage/getNewsInStorage';
-
-import icEnergy from '../../assets/icons/energy.png';
-import icMap1 from '../../assets/icons/ic_map.png';
-import icCall1 from '../../assets/icons/ic_outgoing-call-detail.png';
-import icCalendar from '../../assets/icons/ic_calendar-detail.png';
-import icCall from '../../assets/icons/phone.png';
-import icHeart from '../../assets/icons/love.png';
-import icHeartBr from '../../assets/icons/h.png';
-import icAvatar from '../../assets/icons/avatar.png';
 import icNext from '../../assets/icons/next.png'
 
 export const DetailScreen = ({navigation , route})=>{
   const [save, setSave] = React.useState(false);
   const [isShowText, setShowText] = React.useState(true);
 
-
   React.useEffect(() => {
     getNewsInStorage()
       .then(result => {
-        console.log(result)
         if(result.find(item => item._id === route.params.item._id)) setSave(true);
       })
 
@@ -46,7 +43,6 @@ export const DetailScreen = ({navigation , route})=>{
     };
   }, []);
 
-
   const handleSave = () =>{
     const {toSave } = route.params;
     setSave(true)
@@ -56,7 +52,6 @@ export const DetailScreen = ({navigation , route})=>{
     const {unSave } = route.params;
     setSave(false)
     unSave();
-
   }
   const makeCall = () => {
     let number = route.params.item.phone;
@@ -68,138 +63,11 @@ export const DetailScreen = ({navigation , route})=>{
     }
     Linking.openURL(phoneNumber);
   };
-  const _showInfo1 = () =>{
-    const { price, area} =route.params.item;
-    return(
-      <View style = {styles.info1}>
-        <Text style={styles.title}>
-            {route.params.item.title}
-        </Text>
-        <Block center middle style = {styles.f}>
-          <View style = {{flexDirection:'row'}}>
-              <View style = { isShowText? styleEnergy.active : styleEnergy.un_active}>
-                  <Image source={icEnergy} style={styleEnergy.icon}/>
-              </View> 
-              <Text style = {{textTransform: 'uppercase', color: '#6E6E6E'}}> Giá: </Text>
-              <Text style = {{ color: '#F83A89'}}> {price.toFixed(0).replace(new RegExp('\\d(?=(\\d{3})+$)', 'g'), '$&,')} VND/căn</Text>
-          </View>
-          <View style =  {styles.divider1} />
-          <View style = {{flexDirection:'row', marginTop: 10}}>
-            <Block center middle style = {{flex: 1, flexDirection: 'column'}}>
-              <Text style = {{fontSize: 10 }}>CÒN PHÒNG</Text>
-                <Text style = {{fontSize: 15, color: '#F83A89'}}>Còn</Text>
-            </Block>
-            <Block center middle style = {{flex: 1, flexDirection: 'column'}}>
-              <Text style = {{fontSize: 10}}>DIỆN TÍCH</Text>
-                <Text style = {{fontSize: 15, color: '#F83A89'}}> {area} m2 </Text>
-            </Block>
-          </View>
-        </Block>
-      </View>);
-  }
-  const _showInfo2 = () =>{
-    const { phone, address} =route.params.item;
-    return(
-      <View style = {styles.info2} >
-        <Text style={{ marginBottom: 6 , marginLeft : 15, marginTop: 8, fontSize: 21}}>
-          Địa chỉ
-        </Text>
-        <View style = {{flexDirection: 'row', marginLeft: 15}}>
-          <Image source={icMap1} style={styles.icon}/>
-          <Text style = {{marginLeft: 8,lineHeight: 25, width: width-80}}> {address}</Text>
-        </View>
-        <View style = {{flexDirection: 'row', marginLeft: 15, marginBottom: 10}}>
-          <Image source={icCall1} style={[styles.icon, {marginTop: 5}]}/>
-          <Text style = {{marginLeft: 12, marginTop: 6}}>{phone}</Text>
-        </View>
-      </View>);
-  }
-  const _showInfo3 = () =>{
-    const { createDay } =route.params.item;
-    return(
-      <View style = {styles.info3} >
-        <Text style={{ marginBottom: 6 , marginLeft : 15, marginTop: 8, fontSize: 21}}>
-          Ngày đăng
-        </Text>
-        <View style = {{flexDirection: 'row', marginLeft: 15, marginBottom: 10}}>
-          <Image source={icCalendar} style={[styles.icon, {marginTop: 5}]}/>
-          <Text style = {{marginLeft: 12, marginTop: 6}}>{moment(createDay).fromNow()} - {moment(createDay).format('DD/MM/YYYY')}</Text>
-        </View>
-      </View>);
-  }
-  const _showInfo4 = () => {
-    const { description } =route.params.item;
-    return(
-      <View style = {styles.info4} >
-        <Text style={{ marginBottom: 6 , marginLeft : 15, marginTop: 8, fontSize: 21}}>
-          Chi tiết
-        </Text>
-        <View style = {{ marginLeft: 15, marginBottom: 10 }}>
-          <Text style = {{fontSize: 14, lineHeight: 25}}>{description}</Text>
-        </View>
-      </View>);
-  }
-
-  const _showInfo5 = () => {
-    const { name , avatar} =route.params.item.user;
-    console.log(avatar, '______________________')
-    return(
-      <View style = {styles.info5 } >
-        <Image 
-        source={!avatar?icAvatar:{uri: avatar}}
-        style={styles.avatar}/>
-        <Text style={styles.titleName}> {name}</Text>
-      </View>);
-  }
-
   const _showImage = () =>{
     const {picture} = route.params.item;
     return(
-      <Swiper style= {{height: 250}} showsButtons={true}>
-      {route.params.item.picture.map(item =>{
-        return (
-          <Lightbox>
-            <Image
-            style = {styles.img}
-            source={{
-              uri: item,
-          }}/> 
-          </Lightbox>
-        )})}
-    </Swiper>
+      <ContentImage picture = {picture}/>
     )
-  }
-  const _showIconBottomSave  = () =>{ 
-    return (
-      <TouchableOpacity
-        onPress={() =>!save ? handleSave() : handleUnSave()}
-        style={styles.downButtonSave}>
-        <Image
-          source={!save? icHeart: icHeartBr}
-          style={styles.icon}
-        />
-        <Text style={styles.titleSave}>{!save? 'Lưu tin': 'Đã lưu'}</Text>
-      </TouchableOpacity>
-    )
-  }
-
-  const _showIconBottomCall  = () =>{ 
-    return (
-      <TouchableOpacity
-        onPress={() => makeCall()}
-        style={styles.downButtonCall}>
-        <Image
-          source={icCall}
-          style={styles.downButtonImage}
-        />
-        <Text></Text>
-      </TouchableOpacity>
-    )
-  }
-
-  const _showListCommnet = () =>{
-
-
   }
   const _showComment = () => {
     const {_id, title} = route.params.item;
@@ -210,18 +78,19 @@ export const DetailScreen = ({navigation , route})=>{
           <Image source = {icNext} style = {styles.btnNext}/>
         </Button>
       </View>
-
     )
   }
   const _showMain = () =>{
+    const { name , avatar} =route.params.item.user;
+    const { description, phone, address, price, area, title, createDay} =route.params.item;
     return(
     <View style = {styles.info}>
-      { _showInfo1() }
-      { _showInfo2() }
-      { _showInfo3() }
-      { _showInfo4() }
+      <ContentTitle isShowText= {isShowText} price = {price} title ={ title} area = {area} />
+      <ContentAddress phone={phone} address={address}/>
+      <ContentCreateDate createDay = {createDay}/>
+      <ContentDescription description = {description}/>
       {_showComment()}
-      { _showInfo5() }
+      <ContentAvatar name={name} avatar={avatar}/>  
     </View>);
   }
   return (
@@ -234,8 +103,8 @@ export const DetailScreen = ({navigation , route})=>{
 
       </KeyboardAwareScrollView>
       <View style =  {styles.divider} />
-        { _showIconBottomCall() }
-        { _showIconBottomSave() }
+      <ButtonSave save ={save} handleSave = {handleSave} handleUnSave = {handleUnSave}/>
+      <ButtonCall makeCall = {makeCall}/>
     </View>);
 }
 const styles = StyleSheet.create({
@@ -244,85 +113,9 @@ const styles = StyleSheet.create({
     height: 20,
     width: 20,
   },
-  titleName: {
-    marginTop: 10,
-    marginLeft: 15
-  },  
-  titleSave :{
-    fontSize: 13,
-  },
-  downButtonCall: {
-    opacity: 0.5,
-    borderRadius: 50,
-    backgroundColor:'#ff9966',
-    position: 'absolute',
-    width: 60,
-    height: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    right: 10,
-    top: 2*height/3,
-    right: 15,
-  },
 
-  downButtonSave: {
-    opacity: 0.5,
-    borderRadius: 50,
-    backgroundColor:'#5cd65c',
-    position: 'absolute',
-    width: 60,
-    height: 60,
-    alignItems: 'center',
-    justifyContent: 'center',
-    right: 10,
-    top: 2*height/3+70,
-    right: 15,
-  },
-  downButtonImage: {
-    resizeMode: 'contain',
-    marginTop: 20,
-    width: 30,
-    height: 30,
-  },
   main: {
     height: height - height/10,
-  },
-  img : {
-    height: height/3+15,
-    width: width,
-  },
-  below:{
-    flexDirection: 'row',
-    height: height/10,
-  },
-  box1: {
-    flex: 1,
-  },
-  button_below: {
-    borderRadius:18,
-    borderWidth: 1,
-    borderColor: '#C6D1D1',
-    marginTop : 7,
-    backgroundColor: 'white', 
-    width: width/4, 
-    marginLeft: width/30, 
-    flexDirection: 'row',
-  },
-  fontSize:{
-    fontSize: 18, 
-  },
-  button_text: {
-    marginLeft : 10, 
-    color: '#C6D1D1'
-  },
-  avatar: {
-    marginLeft: 20,
-    height: 60,
-    width:60,
-    borderRadius: 100,
-    marginBottom: 16,
-    borderColor: 'white',
-    borderWidth: StyleSheet.hairlineWidth,
   },
   info: {
     flexDirection: 'column',
@@ -332,67 +125,19 @@ const styles = StyleSheet.create({
     paddingTop: 10,
     paddingBottom: 10
   },
-  info1: {
-    backgroundColor: 'white', 
-    borderRadius: 10 , 
-    width: width-25
-  },
-  info2: {
-    backgroundColor: 'white', 
-    borderRadius: 10 , 
-    width: width-25 , 
-    marginTop: 10
-  },
   info3:{
     backgroundColor: 'white', 
     borderRadius: 10 , 
     width: width-25 , 
     marginTop: 10}
    ,
-   info4: {
-    backgroundColor: 'white',
-    borderRadius: 10 , 
-    width: width-25 , 
-    marginTop: 10
-  }, 
-  info5: {
-    flexDirection: 'row',
-    backgroundColor: 'white',
-    borderRadius: 10 , 
-    width: width-25 , 
-    marginTop: 10
-  },
   divider:{
     width: width, 
     height: 1 , 
     backgroundColor: '#E9E9E9'
   },
-  title: { 
-    marginBottom: 6 , 
-    marginLeft : 15, 
-    marginTop: 8, 
-    fontSize: 24
-  },
-  divider1:{ width: width-25, height: 1 , backgroundColor: '#E9E9E9', marginTop: 10},
-  f: {flexDirection: 'column', marginTop: 10, marginBottom: 10, fontSize: 25 },
-  icon: {
-    width: 20,
-    height: 20,
-  },
-
 });
-const styleEnergy = StyleSheet.create({
-  icon: {
-    width: 30,
-    height: 30,
-  },
-  active: {
-      opacity: 1, 
-  },
-  un_active: {
-      opacity: 0, 
-  },
-}); 
+
  
 
 

@@ -11,7 +11,6 @@ import icMenu from '../../../assets/icons/bars.png'
 
 var { width,height } = Dimensions.get('window');
 
-
 export const HistoryView = ({ navigation, route}) => {
   const [listData, setListData ] = React.useState([]);
   const [isLoading, setLoading ] = React.useState(true);
@@ -26,19 +25,16 @@ export const HistoryView = ({ navigation, route}) => {
             setLoading(false)
           })
       })
-    return () => {
-      
+    return () => {    
     };
   }, []);
   const _showLoading = () =>{
     if(isLoading) 
       return <Spinner visible={isLoading}  textStyle={{color: '#FFF'}}/>
   }
-
   const _handleRemove = (item) =>{
     setListData(listData.filter(i => i!== item))
   }
-
   return (
     <View style = {styles.container}>
        {_showLoading()}
@@ -63,7 +59,6 @@ export const HistoryView = ({ navigation, route}) => {
     </View>
   );
 };
-
  const styles = StyleSheet.create({
    title: {
     marginTop: 8,

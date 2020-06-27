@@ -18,8 +18,6 @@ import icHome from '../../assets/icons/ic_home-mn.png'
 import icAvatar from '../../assets/icons/avatar.png'
 
 export const DrawerMenuHasToken = (props) => {
-  console.log(props.user.avatar, 'user')
-
   const { signOut } = React.useContext(AuthContext);
   return (
     <DrawerContentScrollView {...props} scrollEnabled={false} contentContainerStyle={{ flex: 1 }}>

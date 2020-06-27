@@ -25,10 +25,11 @@ export default class ItemHistory extends Component {
     }
   }
   componentDidMount = async() => {
-    const {item} = this.props;
-    console.log(item.address)
+    console.log('aaaaaaaaa')
+    const {item, route} = this.props;
     await getKeyCode({address: item.address})
       .then( res => {
+        console.log(res)
         this.setState({
           city: res.city,
           district: res.district,
@@ -76,7 +77,7 @@ export default class ItemHistory extends Component {
       ],
       { cancelable: false }
   )).then(()=> _handleRemove(item))
-  }
+}
 
   render() {
     let {title, createDay, picture, status} =  this.props.item;
@@ -85,6 +86,14 @@ export default class ItemHistory extends Component {
       item = route.params.item;
       title = route.params.item.title;
       picture = route.params.item.picture;
+      getKeyCode({address: route.params.item.address})
+        .then( res => {
+          this.setState({
+            city: res.city,
+            district: res.district,
+            ward: res.ward
+          })
+      })
     }
     return (
     <View style={styles.item}>
@@ -105,7 +114,7 @@ export default class ItemHistory extends Component {
       </View> 
       <View style = {styles.below}>
           <View style = {styles.box1}>
-            <TouchableOpacity style = {styles.button_below} onPress={()=> navigation.navigate('History Change', { item, ...this.state})}>
+            <TouchableOpacity style = {styles.button_below} onPress={()=> navigation.navigate(Route.HISTORY_CHANGE, { item, ...this.state})}>
               <Text button style = {[styles.button_text, styles.fontSize]} >Chỉnh sửa</Text>
             </TouchableOpacity>
           </View>
@@ -115,7 +124,7 @@ export default class ItemHistory extends Component {
             </TouchableOpacity>
           </View>
           <View style = {styles.box1}>
-            <TouchableOpacity style = {[styles.button_below ]} onPress={()=> navigation.navigate('History Detail', { item})}>
+            <TouchableOpacity style = {[styles.button_below ]} onPress={()=> navigation.navigate(Route.HISTORY_DETAIL, { item})}>
               <Text button style = {[styles.button_text, styles.fontSize, {marginLeft: 0}]} >Chi tiết</Text>
             </TouchableOpacity>
           </View>

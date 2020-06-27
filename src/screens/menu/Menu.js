@@ -1,8 +1,7 @@
-import React, {useEffect} from 'react';
+import React  from 'react';
 import { StyleSheet , Image } from 'react-native';
 import { createStackNavigator } from '@react-navigation/stack';
 import Animated from 'react-native-reanimated';
-import Icon from 'react-native-vector-icons/FontAwesome';
 
 import { Button } from 'expo-ui-kit';
 

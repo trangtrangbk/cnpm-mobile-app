@@ -8,10 +8,10 @@ import { MenuScreens } from '../screens/menu/Menu';
 
 import { AuthContext } from "../contexts/AuthContext";
 import getToken from '../api/getToken';
-import saveToken from '../api/saveToken';
+import saveToken from '../storage/saveToken';
 import checkLogin from '../api/checkLogin';
-import saveUser from '../api/saveUser';
-import getUser from '../api/getUser';
+import saveUser from '../storage/saveUser';
+import removeUser from '../storage/removeUser';
 
 const Drawer = createDrawerNavigator();
 
@@ -23,6 +23,8 @@ export default () => {
   const [user, setUser] = React.useState({name: '', email: ''});
     
   useEffect(() => {
+
+
     getToken()
       .then(tk => {
         setToken(tk)
@@ -58,14 +60,17 @@ export default () => {
           .then(tk => {
             setToken(tk)
             checkLogin(tk)
-              .then(res => setUser(res.resultUser))
+              .then(res => {
+                saveUser(res.resultUser)
+                setUser(res.resultUser)
+              })
               .catch(err=> {
-                saveToken('')
+                saveToken('');
                 setToken('');
               })
             })
           .catch(err => {
-            saveToken('')
+            saveToken('');
             setToken('');
             })
       },
@@ -75,7 +80,7 @@ export default () => {
             checkLogin(tk)
               .then(res => {
                 if(res.msg) {
-                  console.log(res)
+                  saveUser(res.resultUser)
                   setUser(res.resultUser)
                 }else {
                   saveToken('')
@@ -91,12 +96,11 @@ export default () => {
             saveToken('')
             setToken('');
           })
-
-         
       },
       signOut: () => {
-        saveToken('')
+        saveToken('');
         setToken('');
+        if (removeUser()) console.log('delete success')
       }
     };
   }, []);

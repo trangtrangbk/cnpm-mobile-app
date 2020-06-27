@@ -1,9 +1,10 @@
-const addComment = async (id, values) =>(
+const addComment = async (token,id, values) =>(
     await fetch(`https://myfroom.herokuapp.com/api/comment/${id}`,{
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
             Accept: 'application/json',
+            'Authorization': token
         },
         body: JSON.stringify(values)
     })

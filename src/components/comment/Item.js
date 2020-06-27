@@ -6,12 +6,14 @@ import Text from '../Text';
 
 let viLocale = require('moment/locale/vi');
 moment.locale('vi',viLocale)
+import getUser from '../../storage/getUser';
+
 import icAvatar from '../../assets/icons/avatar.png';
 export const ItemComment = ({item})=>{
   return (
     <View style={styles.container}>
         <View style={styles.content}> 
-        <Image source = {icAvatar} style={styles.avatar}/>
+        <Image source = {item.avatar?{uri: item.avatar}:icAvatar} style={styles.avatar}/>
         <View style={styles.name_day}> 
             <Text style={styles.txtName}>{item.nameWriter}</Text>
             <Text style={styles.txtDay}>{moment(item.createDay).fromNow()} - {moment(item.createDay).format('DD/MM/YYYY')}</Text>

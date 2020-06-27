@@ -54,7 +54,6 @@ const Stack = createStackNavigator();
           </View>
         </TouchableOpacity>
          }}/>
-
       <Stack.Screen name= {Route.COMMENT} component={ CommentScreen } navigation ={navigation} 
        options={{
         headerTransparent: true,
